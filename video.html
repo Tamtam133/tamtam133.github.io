@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Видео-петля</title>
+  <style>body{font-family:system-ui;max-width:700px;margin:24px auto;padding:0 16px}</style>
+</head>
+<body>
+  <h1>Повтор нужного куска</h1>
+  <p>Вставь ID видео (например, для https://www.youtube.com/watch?v=dQw4w9WgXcQ ID — dQw4w9WgXcQ)</p>
+  <input id="vid" placeholder="YouTube ID" />
+  <button id="load">Загрузить</button>
+  <div style="margin:12px 0">
+    Старт (сек): <input id="start" type="number" value="10" style="width:80px" />
+    Конец (сек): <input id="end" type="number" value="20" style="width:80px" />
+    <button id="apply">Применить</button>
+  </div>
+  <div id="player"></div>
+
+  <script>
+  let player, loopStart=10, loopEnd=20, timerId=null;
+
+  function onYouTubeIframeAPIReady() {
+    // создадим пустой плеер — загрузим видео позже
+    player = new YT.Player('player', {
+      height: '360', width: '640',
+      videoId: '', events: { 'onStateChange': onStateChange }
+    });
+  }
+
+  function onStateChange(e) {
+    if (timerId) clearInterval(timerId);
+    if (e.data === YT.PlayerState.PLAYING) {
+      timerId = setInterval(() => {
+        const t = player.getCurrentTime();
+        if (t >= loopEnd) player.seekTo(loopStart, true);
+      }, 300);
+    }
+  }
+
+  document.getElementById("load").onclick = () => {
+    const id = document.getElementById("vid").value.trim();
+    if (!id) return;
+    if (!player) return alert("Плеер ещё загружается…");
+    player.loadVideoById({ videoId: id, startSeconds: loopStart });
+  };
+  document.getElementById("apply").onclick = () => {
+    loopStart = +document.getElementById("start").value || 0;
+    loopEnd   = +document.getElementById("end").value   || 0;
+    if (loopEnd <= loopStart) loopEnd = loopStart + 1;
+    if (player && player.getVideoData().video_id) player.seekTo(loopStart, true);
+  };
+
+  // подключаем API
+  const tag = document.createElement('script');
+  tag.src = "https://www.youtube.com/iframe_api";
+  document.body.appendChild(tag);
+  </script>
+</body>
+</html>

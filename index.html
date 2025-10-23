@@ -3,39 +3,145 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Мой корейский — MVP</title>
-
-  <!-- Подключаем общий CSS -->
+  <title>Мой корейский — Видео</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="site-header">
-    <div class="container">
-      <h1 class="site-title">안녕하세요! Первый MVP</h1>
+    <div class="container header-row">
+      <a class="brand" href="index.html">
+        <span class="brand-logo">🧩</span>
+        <span class="brand-title">Мой корейский</span>
+      </a>
+
       <nav class="site-nav">
-        <!-- Ссылки на будущие страницы; оставь как есть или убери -->
-        <a href="index.html" aria-current="page">Текст</a>
+        <a href="index.html">Текст</a>
         <a href="flashcards.html">Карточки</a>
-        <a href="video.html">Видео</a>
+        <a href="video.html" aria-current="page">Видео</a>
       </nav>
     </div>
   </header>
 
-  <main class="container">
-    <!-- Панель со стриком и лимитом -->
-    <section id="meta" class="meta"></section>
+  <main class="container page">
+    <!-- Хлебные крошки -->
+    <nav class="breadcrumbs">
+      <a href="index.html">Главная</a>
+      <span>›</span>
+      <span>Видео</span>
+    </nav>
 
-    <!-- Текст дня -->
-    <section class="card">
-      <h2>Текст дня</h2>
-      <div id="reader" class="reader"></div>
+    <h1 class="page-title">Каталог видео</h1>
+
+    <!-- Панель: поиск + кнопки справа -->
+    <section class="toolbar">
+      <div class="search">
+        <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20">
+          <path d="M21 21l-4.3-4.3M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <input id="videoSearch" type="search" placeholder="Поиск" />
+      </div>
+
+      <div class="toolbar-actions">
+        <button class="btn ghost">Личный план</button>
+        <button class="btn primary">Подключить доступ</button>
+      </div>
     </section>
 
-    <!-- Список добавленных слов -->
-    <section class="card">
-      <h2>Мои добавленные слова</h2>
-      <ul id="wordList" class="word-list"></ul>
+    <!-- Табы -->
+    <section class="tabs" role="tablist">
+      <button class="tab is-active" data-filter="new" role="tab">Новые <span class="counter">123</span></button>
+      <button class="tab" data-filter="trend" role="tab">В тренде <span class="counter">25</span></button>
+      <button class="tab" data-filter="starter" role="tab">Начатые вами <span class="counter">4</span></button>
+      <button class="tab" data-filter="fav" role="tab">Избранное <span class="counter">6</span></button>
     </section>
+
+    <!-- Сетка карточек -->
+    <section class="grid" id="videoGrid">
+      <!-- Карточка -->
+      <article class="video-card" data-tags="new trend">
+        <a class="thumb" href="#" aria-label="Открыть видео">
+          <img src="https://picsum.photos/640/360?1" alt="" loading="lazy" />
+          <span class="chip top-left">Образование</span>
+          <span class="chip top-right">77 фраз</span>
+          <span class="thumb-overlay"></span>
+          <span class="title">Отличия американской и британской систем образования. Часть 2</span>
+        </a>
+        <div class="meta-row">
+          <div class="meta-left">
+            <span class="metric" title="Субтитры: британский">🇬🇧</span>
+            <span class="metric" title="Просмотры/прогресс">▮▮▯</span>
+          </div>
+          <div class="meta-right">
+            <span class="metric">♡ 31</span>
+            <span class="metric dim">год назад</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="video-card" data-tags="new starter">
+        <a class="thumb" href="#">
+          <img src="https://picsum.photos/640/360?2" alt="" loading="lazy" />
+          <span class="chip top-left">Образование</span>
+          <span class="chip top-right">79 фраз</span>
+          <span class="thumb-overlay"></span>
+          <span class="title">Что сказать, если потерял мысль</span>
+        </a>
+        <div class="meta-row">
+          <div class="meta-left">
+            <span class="metric">🇺🇸</span>
+            <span class="metric">▮▯▯</span>
+          </div>
+          <div class="meta-right">
+            <span class="metric">♡ 285</span>
+            <span class="metric dim">полгода назад</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="video-card" data-tags="new fav">
+        <a class="thumb" href="#">
+          <img src="https://picsum.photos/640/360?3" alt="" loading="lazy" />
+          <span class="chip top-left">Для детей</span>
+          <span class="chip top-right">12 фраз</span>
+          <span class="thumb-overlay"></span>
+          <span class="title">Давай посчитаем!</span>
+        </a>
+        <div class="meta-row">
+          <div class="meta-left">
+            <span class="metric">🇺🇸</span>
+            <span class="metric">▮▮▮</span>
+          </div>
+          <div class="meta-right">
+            <span class="metric">♡ 95</span>
+            <span class="metric dim">год назад</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="video-card" data-tags="trend">
+        <a class="thumb" href="#">
+          <img src="https://picsum.photos/640/360?4" alt="" loading="lazy" />
+          <span class="chip top-left">Развлечения</span>
+          <span class="chip top-right">34 фразы</span>
+          <span class="thumb-overlay"></span>
+          <span class="title">Интервью: любимые фильмы</span>
+        </a>
+        <div class="meta-row">
+          <div class="meta-left">
+            <span class="metric">🇰🇷</span>
+            <span class="metric">▮▮▯</span>
+          </div>
+          <div class="meta-right">
+            <span class="metric">♡ 12</span>
+            <span class="metric dim">2 мес назад</span>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <div class="more">
+      <a class="btn link">Показать все</a>
+    </div>
   </main>
 
   <footer class="site-footer">
@@ -44,9 +150,30 @@
     </div>
   </footer>
 
-  <noscript>Для работы интерактива включи JavaScript.</noscript>
-
-  <!-- Скрипты лучше подключать внизу, чтобы DOM уже был готов -->
   <script src="app.js" defer></script>
+  <script>
+    // Простой фильтр по табам
+    const tabs = document.querySelectorAll('.tab');
+    const cards = document.querySelectorAll('.video-card');
+    tabs.forEach(t => t.addEventListener('click', () => {
+      tabs.forEach(x => x.classList.remove('is-active'));
+      t.classList.add('is-active');
+      const tag = t.dataset.filter;
+      cards.forEach(c => {
+        c.style.display = (tag === 'new') ? '' : (c.dataset.tags.includes(tag) ? '' : 'none');
+      });
+    }));
+
+    // Простой поиск по заголовку
+    const search = document.getElementById('videoSearch');
+    search.addEventListener('input', () => {
+      const q = search.value.trim().toLowerCase();
+      cards.forEach(c => {
+        const title = c.querySelector('.title').textContent.toLowerCase();
+        c.style.display = title.includes(q) ? '' : 'none';
+      });
+    });
+  </script>
 </body>
 </html>
+

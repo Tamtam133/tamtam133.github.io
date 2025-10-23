@@ -2,60 +2,260 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Видео-петля</title>
-  <style>body{font-family:system-ui;max-width:700px;margin:24px auto;padding:0 16px}</style>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <h1>Повтор нужного куска</h1>
-  <p>Вставь ID видео (например, для https://www.youtube.com/watch?v=dQw4w9WgXcQ ID — dQw4w9WgXcQ)</p>
-  <input id="vid" placeholder="YouTube ID" />
-  <button id="load">Загрузить</button>
-  <div style="margin:12px 0">
-    Старт (сек): <input id="start" type="number" value="10" style="width:80px" />
-    Конец (сек): <input id="end" type="number" value="20" style="width:80px" />
-    <button id="apply">Применить</button>
-  </div>
-  <div id="player"></div>
+  <header class="site-header">
+    <div class="container">
+      <h1 class="site-title">Видео-петля</h1>
+      <nav class="site-nav">
+        <a href="index.html">Текст</a>
+        <a href="flashcards.html">Карточки</a>
+        <a href="video.html" aria-current="page">Видео</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div class="controls stack">
+        <label class="field">
+          <span class="label">ID или URL видео</span>
+          <input id="vid" type="text" placeholder="dQw4w9WgXcQ или https://www.youtube.com/watch?v=dQw4w9WgXcQ" />
+        </label>
+
+        <div class="row">
+          <button id="load">Загрузить</button>
+
+          <label class="field small">
+            <span class="label">Скорость</span>
+            <select id="rate">
+              <option value="0.75">0.75×</option>
+              <option value="1" selected>1×</option>
+              <option value="1.25">1.25×</option>
+              <option value="1.5">1.5×</option>
+            </select>
+          </label>
+
+          <label class="toggle">
+            <input type="checkbox" id="loopOn" checked />
+            <span>Петля A–B (L)</span>
+          </label>
+        </div>
+
+        <div class="row">
+          <label class="field small">
+            <span class="label">Старт (сек)</span>
+            <input id="start" type="number" min="0" value="10" />
+          </label>
+
+          <label class="field small">
+            <span class="label">Конец (сек)</span>
+            <input id="end" type="number" min="0" value="20" />
+          </label>
+
+          <button id="setStartNow" title="[">⏱ Старт = сейчас</button>
+          <button id="setEndNow" title="]">⏱ Конец = сейчас</button>
+          <button id="apply">Применить</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div id="player" class="player-wrap" aria-label="YouTube player"></div>
+      <p class="muted small">
+        Горячие клавиши: <b>L</b> — петля вкл/выкл, <b>[</b> — старт=сейчас, <b>]</b> — конец=сейчас,
+        <b>Пробел</b> — пауза/воспроизведение.
+      </p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <small>© Твой проект по корейскому</small>
+    </div>
+  </footer>
 
   <script>
-  let player, loopStart=10, loopEnd=20, timerId=null;
+    // ------- Сохранение настроек -------
+    const LS_VIDEO = "videoLoop";
+    const $ = (id) => document.getElementById(id);
 
-  function onYouTubeIframeAPIReady() {
-    // создадим пустой плеер — загрузим видео позже
-    player = new YT.Player('player', {
-      height: '360', width: '640',
-      videoId: '', events: { 'onStateChange': onStateChange }
-    });
-  }
-
-  function onStateChange(e) {
-    if (timerId) clearInterval(timerId);
-    if (e.data === YT.PlayerState.PLAYING) {
-      timerId = setInterval(() => {
-        const t = player.getCurrentTime();
-        if (t >= loopEnd) player.seekTo(loopStart, true);
-      }, 300);
+    function loadState() {
+      try { return JSON.parse(localStorage.getItem(LS_VIDEO)) || {}; }
+      catch { return {}; }
     }
-  }
+    function saveState(s) {
+      localStorage.setItem(LS_VIDEO, JSON.stringify(s));
+    }
 
-  document.getElementById("load").onclick = () => {
-    const id = document.getElementById("vid").value.trim();
-    if (!id) return;
-    if (!player) return alert("Плеер ещё загружается…");
-    player.loadVideoById({ videoId: id, startSeconds: loopStart });
-  };
-  document.getElementById("apply").onclick = () => {
-    loopStart = +document.getElementById("start").value || 0;
-    loopEnd   = +document.getElementById("end").value   || 0;
-    if (loopEnd <= loopStart) loopEnd = loopStart + 1;
-    if (player && player.getVideoData().video_id) player.seekTo(loopStart, true);
-  };
+    // ------- Переменные -------
+    let player = null;
+    let timerId = null;
+    let state = Object.assign(
+      { videoId: "", start: 10, end: 20, loop: true, rate: 1 },
+      loadState()
+    );
 
-  // подключаем API
-  const tag = document.createElement('script');
-  tag.src = "https://www.youtube.com/iframe_api";
-  document.body.appendChild(tag);
+    // ------- Помощники -------
+    function extractId(input) {
+      // Принимаем чистый ID или любой из форматов youtube.com / youtu.be
+      if (!input) return "";
+      const idLike = input.trim();
+
+      // если строка выглядит как чистый ID (11 символов из набора)
+      if (/^[\w-]{11}$/.test(idLike)) return idLike;
+
+      // попробуем вытащить из URL
+      try {
+        const url = new URL(idLike);
+        if (url.hostname.includes("youtu.be")) {
+          return url.pathname.slice(1);
+        }
+        if (url.hostname.includes("youtube.com")) {
+          const v = url.searchParams.get("v");
+          if (v) return v;
+          // плейлист/эмбед
+          const m = url.pathname.match(/\/embed\/([\w-]{11})/);
+          if (m) return m[1];
+        }
+      } catch(_) { /* не URL */ }
+      return "";
+    }
+
+    function clampLoop() {
+      if (state.end <= state.start) state.end = state.start + 1;
+    }
+
+    function setInputsFromState() {
+      $("vid").value = state.videoId || "";
+      $("start").value = Math.max(0, Math.floor(state.start));
+      $("end").value = Math.max(0, Math.floor(state.end));
+      $("loopOn").checked = !!state.loop;
+      $("rate").value = String(state.rate || 1);
+    }
+
+    function applyInputsToState() {
+      state.start = +$("start").value || 0;
+      state.end   = +$("end").value || 0;
+      state.loop  = $("loopOn").checked;
+      state.rate  = +$("rate").value || 1;
+      clampLoop();
+      saveState(state);
+    }
+
+    // ------- YouTube Iframe API -------
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player("player", {
+        height: "360",
+        width: "640",
+        videoId: state.videoId || "",
+        playerVars: { rel: 0, modestbranding: 1 },
+        events: {
+          onReady: onReady,
+          onStateChange: onStateChange
+        }
+      });
+    }
+    window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
+
+    function onReady() {
+      // Установим скорость
+      try { player.setPlaybackRate(state.rate); } catch(_) {}
+      // Если заранее есть видео — начнём с точки старта
+      if (state.videoId) {
+        player.seekTo(state.start, true);
+      }
+    }
+
+    function onStateChange(e) {
+      if (timerId) { clearInterval(timerId); timerId = null; }
+      if (e.data === YT.PlayerState.PLAYING && state.loop) {
+        timerId = setInterval(() => {
+          const t = player.getCurrentTime();
+          if (t >= state.end) player.seekTo(state.start, true);
+        }, 250);
+      }
+    }
+
+    function ensurePlayerLoaded(cb) {
+      if (player) return cb();
+      alert("Плеер ещё загружается… Попробуй через секунду.");
+    }
+
+    // ------- Обработчики UI -------
+    $("load").onclick = () => {
+      const raw = $("vid").value.trim();
+      const id = extractId(raw);
+      if (!id) return alert("Не могу понять ID. Вставь 11-символьный ID или полный URL YouTube.");
+      state.videoId = id;
+      saveState(state);
+      ensurePlayerLoaded(() => {
+        player.loadVideoById({ videoId: id, startSeconds: state.start });
+        player.setPlaybackRate(state.rate || 1);
+      });
+    };
+
+    $("apply").onclick = () => {
+      applyInputsToState();
+      ensurePlayerLoaded(() => {
+        if (player.getVideoData().video_id) {
+          player.pauseVideo();
+          player.seekTo(state.start, true);
+          player.setPlaybackRate(state.rate || 1);
+        }
+      });
+    };
+
+    $("setStartNow").onclick = () => {
+      ensurePlayerLoaded(() => {
+        $("start").value = Math.floor(player.getCurrentTime());
+        $("apply").click();
+      });
+    };
+
+    $("setEndNow").onclick = () => {
+      ensurePlayerLoaded(() => {
+        $("end").value = Math.floor(player.getCurrentTime());
+        $("apply").click();
+      });
+    };
+
+    $("rate").onchange = () => $("apply").click();
+    $("loopOn").onchange = () => { state.loop = $("loopOn").checked; saveState(state); };
+
+    // Горячие клавиши
+    window.addEventListener("keydown", (e) => {
+      const tag = (e.target && e.target.tagName) || "";
+      if (tag === "INPUT" || tag === "TEXTAREA" || e.metaKey || e.ctrlKey) return;
+
+      if (e.code === "Space") {
+        e.preventDefault();
+        ensurePlayerLoaded(() => {
+          const s = player.getPlayerState();
+          if (s === YT.PlayerState.PLAYING) player.pauseVideo();
+          else player.playVideo();
+        });
+      }
+      if (e.key === "l" || e.key === "L") {
+        $("loopOn").checked = !$("loopOn").checked;
+        $("loopOn").dispatchEvent(new Event("change"));
+      }
+      if (e.key === "[") { $("setStartNow").click(); }
+      if (e.key === "]") { $("setEndNow").click(); }
+    });
+
+    // ------- Старт -------
+    (function init() {
+      setInputsFromState();
+      // подключаем Iframe API
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      document.body.appendChild(tag);
+    })();
   </script>
 </body>
 </html>
+

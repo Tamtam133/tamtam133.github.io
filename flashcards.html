@@ -2,31 +2,80 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Карточки</title>
-  <style>body{font-family:system-ui;max-width:700px;margin:24px auto;padding:0 16px}</style>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <h1>Карточки</h1>
-  <div id="card" class="card"></div>
-  <p>
-    <button id="hard">Тяжело</button>
-    <button id="ok">Норм</button>
-    <button id="easy">Легко</button>
-  </p>
+  <header class="site-header">
+    <div class="container">
+      <h1 class="site-title">Карточки</h1>
+      <nav class="site-nav">
+        <a href="index.html">Текст</a>
+        <a href="flashcards.html" aria-current="page">Карточки</a>
+        <a href="video.html">Видео</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div id="stats" class="muted"></div>
+      <div id="card" class="big-word" aria-live="polite"></div>
+
+      <div class="controls">
+        <button id="hard"  title="Тяжело (горячая клавиша: 1)">Тяжело</button>
+        <button id="ok"    title="Нормально (горячая клавиша: 2)">Норм</button>
+        <button id="easy"  title="Легко (горячая клавиша: 3)">Легко</button>
+        <button id="skip"  title="Показать следующее (горячая клавиша: Space)">Пропустить</button>
+        <button id="remove" class="danger" title="Удалить слово из колоды">Удалить</button>
+      </div>
+
+      <p class="muted small">
+        Подсказка: 1 — Тяжело, 2 — Норм, 3 — Легко, Space — Пропустить
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Как это работает</h2>
+      <p>
+        Показываем слова, у которых подошёл срок повторения. Тайминги по кнопкам:
+        <b>Тяжело</b> — +10 минут, <b>Норм</b> — +8 часов, <b>Легко</b> — +2 дня.
+        Логику можно будет заменить на SM-2 позже.
+      </p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <small>© Твой проект по корейскому</small>
+    </div>
+  </footer>
+
   <script>
-  const LS_KEY = "myWords";
+  // --------- Константы/хранилище ----------
+  const LS_WORDS = "myWords"; // [{word, ts, laps, nextAt}]
   let deck = [];
+  let current = null;
 
-  function load() { return JSON.parse(localStorage.getItem(LS_KEY)) || []; }
-  function save(x) { localStorage.setItem(LS_KEY, JSON.stringify(x)); }
+  const $ = (id) => document.getElementById(id);
 
+  function load() {
+    try { return JSON.parse(localStorage.getItem(LS_WORDS)) || []; }
+    catch { return []; }
+  }
+  function save(x) { localStorage.setItem(LS_WORDS, JSON.stringify(x)); }
+
+  // --------- Планирование ----------
   function pickDueWord(list) {
+    if (!list.length) return null;
     const now = Date.now();
     const due = list.filter(w => (w.nextAt ?? 0) <= now);
-    if (due.length) return due.sort((a,b)=> (a.nextAt||0)-(b.nextAt||0))[0];
-    // если «долгов нет» — покажем ближайшую по времени
-    return list.sort((a,b)=> (a.nextAt||0)-(b.nextAt||0))[0];
+    const pool = (due.length ? due : list).slice();
+    // сортируем по времени следующего показа, затем лёгкая рандомизация
+    pool.sort((a,b) => (a.nextAt||0)-(b.nextAt||0));
+    const idx = Math.min(2, pool.length - 1); // берём одну из ближайших трёх
+    return pool[Math.floor(Math.random() * (idx+1))];
   }
 
   function schedule(wordObj, how) {
@@ -34,21 +83,82 @@
     if (how === "hard") wordObj.nextAt = now + 10*60*1000;       // +10 мин
     if (how === "ok")   wordObj.nextAt = now + 8*60*60*1000;     // +8 часов
     if (how === "easy") wordObj.nextAt = now + 2*24*60*60*1000;  // +2 дня
-    wordObj.laps = (wordObj.laps||0) + 1;
+    wordObj.laps = (wordObj.laps || 0) + 1;
     save(deck);
     show();
   }
 
+  // --------- UI ----------
+  function fmtRelative(ts) {
+    const diff = Math.round((ts - Date.now()) / 60000); // мин
+    if (diff <= 0) return "сейчас";
+    if (diff < 60) return `через ${diff} мин`;
+    const h = Math.round(diff / 60);
+    return `через ~${h} ч`;
+  }
+
+  function updateStats() {
+    const now = Date.now();
+    const dueCount = deck.filter(w => (w.nextAt ?? 0) <= now).length;
+    const total = deck.length;
+    const next = deck.length
+      ? deck.slice().sort((a,b)=>(a.nextAt||0)-(b.nextAt||0))[0].nextAt
+      : null;
+    $("stats").innerHTML = total
+      ? `Готово к повтору: <b>${dueCount}</b> / ${total}` +
+        (next ? ` · Следующее: <span class="muted">${fmtRelative(next)}</span>` : "")
+      : `Пока нет слов. Вернись к <a href="index.html">тексту</a> и добавь слова кликом.`;
+  }
+
+  function renderCard(w) {
+    $("card").textContent = w ? w.word : "";
+  }
+
   function show() {
     deck = load();
-    const box = document.getElementById("card");
-    if (!deck.length) { box.textContent = "Пока нет слов. Добавь их кликом в тексте."; return; }
-    const w = pickDueWord(deck);
-    box.innerHTML = `<div style="font-size:42px">${w.word}</div>`;
-    document.getElementById("hard").onclick = () => schedule(w, "hard");
-    document.getElementById("ok").onclick   = () => schedule(w, "ok");
-    document.getElementById("easy").onclick = () => schedule(w, "easy");
+    updateStats();
+    if (!deck.length) { renderCard(null); toggleControls(false); return; }
+
+    current = pickDueWord(deck);
+    renderCard(current);
+    toggleControls(!!current);
   }
+
+  function toggleControls(on) {
+    ["hard","ok","easy","skip","remove"].forEach(id => {
+      const el = $(id);
+      if (!el) return;
+      el.disabled = !on;
+    });
+  }
+
+  // --------- События ----------
+  $("hard").onclick  = () => current && schedule(current, "hard");
+  $("ok").onclick    = () => current && schedule(current, "ok");
+  $("easy").onclick  = () => current && schedule(current, "easy");
+
+  $("skip").onclick  = () => show();
+
+  $("remove").onclick = () => {
+    if (!current) return;
+    if (!confirm(`Удалить «${current.word}» из колоды?`)) return;
+    deck = deck.filter(x => x.word !== current.word);
+    save(deck);
+    show();
+  };
+
+  // Горячие клавиши: 1/2/3/Space
+  window.addEventListener("keydown", (e) => {
+    if (!current) return;
+    if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;
+
+    if (e.code === "Digit1" || e.key === "1") { schedule(current, "hard");  e.preventDefault(); }
+    if (e.code === "Digit2" || e.key === "2") { schedule(current, "ok");    e.preventDefault(); }
+    if (e.code === "Digit3" || e.key === "3") { schedule(current, "easy");  e.preventDefault(); }
+    if (e.code === "Space")                   { show();                      e.preventDefault(); }
+  });
+
+  // --------- Старт ----------
   show();
   </script>
 </body>

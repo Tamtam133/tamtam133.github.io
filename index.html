@@ -2,28 +2,51 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Мой корейский — MVP</title>
+
+  <!-- Подключаем общий CSS -->
   <link rel="stylesheet" href="styles.css" />
-  <script defer src="app.js"></script>
-  <style>
-    body { font-family: system-ui, Arial; max-width: 880px; margin: 24px auto; padding: 0 16px; line-height: 1.6 }
-    .card { border: 1px solid #ddd; border-radius: 12px; padding: 16px; margin: 12px 0 }
-    button { padding: 8px 12px; border-radius: 10px; border: 1px solid #ccc; cursor: pointer }
-  </style>
 </head>
 <body>
-  <h1>안녕하세요! Первый MVP</h1>
-  <p>Сайт живёт на GitHub Pages. Дальше добавим интерактив.</p>
-  <div id="meta"></div>
-  <div class="card">
-  <h2>Текст дня</h2>
-  <div id="reader"></div>
-</div>
+  <header class="site-header">
+    <div class="container">
+      <h1 class="site-title">안녕하세요! Первый MVP</h1>
+      <nav class="site-nav">
+        <!-- Ссылки на будущие страницы; оставь как есть или убери -->
+        <a href="index.html" aria-current="page">Текст</a>
+        <a href="flashcards.html">Карточки</a>
+        <a href="video.html">Видео</a>
+      </nav>
+    </div>
+  </header>
 
-<div class="card">
-  <h2>Мои добавленные слова</h2>
-  <ul id="wordList"></ul>
-</div>
+  <main class="container">
+    <!-- Панель со стриком и лимитом -->
+    <section id="meta" class="meta"></section>
+
+    <!-- Текст дня -->
+    <section class="card">
+      <h2>Текст дня</h2>
+      <div id="reader" class="reader"></div>
+    </section>
+
+    <!-- Список добавленных слов -->
+    <section class="card">
+      <h2>Мои добавленные слова</h2>
+      <ul id="wordList" class="word-list"></ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <small>© Твой проект по корейскому</small>
+    </div>
+  </footer>
+
+  <noscript>Для работы интерактива включи JavaScript.</noscript>
+
+  <!-- Скрипты лучше подключать внизу, чтобы DOM уже был готов -->
+  <script src="app.js" defer></script>
 </body>
 </html>

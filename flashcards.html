@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Карточки</title>
+  <style>body{font-family:system-ui;max-width:700px;margin:24px auto;padding:0 16px}</style>
+</head>
+<body>
+  <h1>Карточки</h1>
+  <div id="card" class="card"></div>
+  <p>
+    <button id="hard">Тяжело</button>
+    <button id="ok">Норм</button>
+    <button id="easy">Легко</button>
+  </p>
+  <script>
+  const LS_KEY = "myWords";
+  let deck = [];
+
+  function load() { return JSON.parse(localStorage.getItem(LS_KEY)) || []; }
+  function save(x) { localStorage.setItem(LS_KEY, JSON.stringify(x)); }
+
+  function pickDueWord(list) {
+    const now = Date.now();
+    const due = list.filter(w => (w.nextAt ?? 0) <= now);
+    if (due.length) return due.sort((a,b)=> (a.nextAt||0)-(b.nextAt||0))[0];
+    // если «долгов нет» — покажем ближайшую по времени
+    return list.sort((a,b)=> (a.nextAt||0)-(b.nextAt||0))[0];
+  }
+
+  function schedule(wordObj, how) {
+    const now = Date.now();
+    if (how === "hard") wordObj.nextAt = now + 10*60*1000;       // +10 мин
+    if (how === "ok")   wordObj.nextAt = now + 8*60*60*1000;     // +8 часов
+    if (how === "easy") wordObj.nextAt = now + 2*24*60*60*1000;  // +2 дня
+    wordObj.laps = (wordObj.laps||0) + 1;
+    save(deck);
+    show();
+  }
+
+  function show() {
+    deck = load();
+    const box = document.getElementById("card");
+    if (!deck.length) { box.textContent = "Пока нет слов. Добавь их кликом в тексте."; return; }
+    const w = pickDueWord(deck);
+    box.innerHTML = `<div style="font-size:42px">${w.word}</div>`;
+    document.getElementById("hard").onclick = () => schedule(w, "hard");
+    document.getElementById("ok").onclick   = () => schedule(w, "ok");
+    document.getElementById("easy").onclick = () => schedule(w, "easy");
+  }
+  show();
+  </script>
+</body>
+</html>

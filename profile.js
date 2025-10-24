@@ -1,136 +1,125 @@
 // profile.js
-
-const LS_META = "siteMeta";
-const LS_WORDS = "myWords";
-const LS_USER = "userProfile"; // { name: "Имя Фамилия" }
+const LS_META   = "siteMeta";
+const LS_WORDS  = "myWords";
+const LS_USER   = "userProfile"; // { authed: bool, name: string, photoUrl: string }
 const BASE_LIMIT = 10;
 
 const $ = (id) => document.getElementById(id);
 
-// ---------- Метаданные/стрик ----------
-function loadMeta() {
-    try { return JSON.parse(localStorage.getItem(LS_META)) || {}; }
-    catch { return {}; }
-}
-function saveMeta(m) { localStorage.setItem(LS_META, JSON.stringify(m)); }
-function todayStr() { return new Date().toISOString().slice(0, 10); }
+// ---------- helpers: meta/streak ----------
+function loadMeta(){ try { return JSON.parse(localStorage.getItem(LS_META)) || {}; } catch { return {}; } }
+function saveMeta(m){ localStorage.setItem(LS_META, JSON.stringify(m)); }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
 
-function refreshDaily() {
-    const m = loadMeta();
-    const t = todayStr();
-    if (!m.lastVisit) {
-        const init = { lastVisit: t, streak: 1, addedToday: 0 };
-        saveMeta(init);
-        return init;
+function refreshDaily(){
+  const m = loadMeta(); const t = todayStr();
+  if (!m.lastVisit) { const init = { lastVisit: t, streak: 1, addedToday: 0 }; saveMeta(init); return init; }
+  if (m.lastVisit === t) return m;
+  const diff = Math.round((new Date(t) - new Date(m.lastVisit)) / 86400000);
+  m.streak = diff === 1 ? (m.streak || 0) + 1 : 1;
+  m.lastVisit = t; m.addedToday = 0; saveMeta(m); return m;
+}
+function getDailyLimit(meta){ const bonus = Math.floor((meta.streak || 1) / 3) * 5; return BASE_LIMIT + bonus; }
+
+// ---------- helpers: user ----------
+function loadUser(){ try { return JSON.parse(localStorage.getItem(LS_USER)) || {}; } catch { return {}; } }
+function saveUser(u){ localStorage.setItem(LS_USER, JSON.stringify(u)); }
+function initials(name=""){ const p=name.trim().split(/\s+/).filter(Boolean); if(!p.length) return "Г"; return (p[0][0]+(p[1]?.[0]||"")).toUpperCase(); }
+
+// ---------- menu open/close ----------
+function openMenu(){ const m=$("profileMenu"); if(!m) return; m.setAttribute("aria-hidden","false"); m.removeAttribute("hidden"); $("profileBtn")?.setAttribute("aria-expanded","true"); }
+function closeMenu(){ const m=$("profileMenu"); if(!m) return; m.setAttribute("aria-hidden","true"); m.setAttribute("hidden",""); $("profileBtn")?.setAttribute("aria-expanded","false"); }
+function toggleMenu(){ ( $("profileMenu")?.getAttribute("aria-hidden") !== "false" ) ? openMenu() : closeMenu(); }
+
+function setupDismiss(){
+  document.addEventListener("click",(e)=>{
+    const m=$("profileMenu"), b=$("profileBtn"); if(!m||!b) return;
+    if (m.contains(e.target) || b.contains(e.target)) return;
+    closeMenu();
+  });
+  window.addEventListener("keydown",(e)=>{ if(e.key==="Escape") closeMenu(); });
+}
+
+// ---------- hydrate UI ----------
+function hydrateProfile(){
+  const user = loadUser();
+  const isAuthed = !!user.authed;
+  const name = isAuthed ? (user.name || "Без имени") : "Гость";
+
+  // Аватар: фото или инициалы
+  const img  = $("avatarImg");
+  const init = $("avatarInitials");
+  const imgS = $("avatarImgSm");
+  const initS= $("avatarInitialsSm");
+
+  if (user.photoUrl) {
+    if (img)  { img.src = user.photoUrl;  img.hidden = false; }
+    if (init) init.hidden = true;
+    if (imgS) { imgS.src = user.photoUrl; imgS.hidden = false; }
+    if (initS) initS.hidden = true;
+  } else {
+    if (img)  img.hidden = true;
+    if (init) { init.textContent = initials(name); init.hidden = false; }
+    if (imgS) imgS.hidden = true;
+    if (initS) { initS.textContent = initials(name); initS.hidden = false; }
+  }
+
+  // Имя
+  const pn = $("profileName"); if (pn) pn.textContent = name;
+
+  // Стрик/лимит: скрываем у гостя
+  const ps = $("profileSub");
+  if (ps) {
+    if (isAuthed) {
+      const meta = refreshDaily(); const limit = getDailyLimit(meta);
+      ps.textContent = `Стрик ${meta.streak} дн · лимит ${limit}`;
+      ps.classList.remove("hidden");
+    } else {
+      ps.classList.add("hidden");
     }
-    if (m.lastVisit === t) return m;
-    const prev = new Date(m.lastVisit), now = new Date(t);
-    const diff = Math.round((now - prev) / (24 * 60 * 60 * 1000));
-    m.streak = diff === 1 ? (m.streak || 0) + 1 : 1;
-    m.lastVisit = t;
-    m.addedToday = 0;
-    saveMeta(m);
-    return m;
-}
-function getDailyLimit(meta) {
-    const bonus = Math.floor((meta.streak || 1) / 3) * 5; // +5 за каждые 3 дня
-    return BASE_LIMIT + bonus;
+  }
+
+  // Ссылки меню: показываем только авторизованным
+  const links = $("menuLinks");
+  if (links) links.classList.toggle("hidden", !isAuthed);
+
+  // Кнопки входа/выхода
+  $("loginBtn")?.classList.toggle("hidden", isAuthed);
+  $("logoutBtn")?.classList.toggle("hidden", !isAuthed);
 }
 
-// ---------- Пользователь ----------
-function loadUser() {
-    try { return JSON.parse(localStorage.getItem(LS_USER)) || {}; }
-    catch { return {}; }
+// ---------- actions ----------
+function loginFlow(){
+  // простой флоу: спросим имя и (опционально) ссылку на аватар
+  const cur = loadUser();
+  const name = prompt("Как тебя отображать в профиле?", cur.name || "") || "Пользователь";
+  const photoUrl = prompt("URL картинки-аватара (можно оставить пустым):", cur.photoUrl || "") || "";
+  saveUser({ authed: true, name, photoUrl });
+  hydrateProfile(); closeMenu();
 }
-function saveUser(u) { localStorage.setItem(LS_USER, JSON.stringify(u)); }
-function initials(name = "") {
-    const parts = name.trim().split(/\s+/).filter(Boolean);
-    if (!parts.length) return "GK"; // Гость Кор
-    const i = (parts[0][0] || "") + (parts[1]?.[0] || "");
-    return i.toUpperCase();
+function logoutFlow(){
+  const keep = loadUser();
+  saveUser({ authed: false, name: "Гость", photoUrl: "" }); // не трогаем слова/стрик
+  hydrateProfile(); closeMenu();
 }
-
-// ---------- Меню ----------
-function openMenu() {
-    const menu = $("profileMenu");
-    if (!menu) return;
-    menu.setAttribute("aria-hidden", "false");
-    $("profileBtn").setAttribute("aria-expanded", "true");
-}
-function closeMenu() {
-    const menu = $("profileMenu");
-    if (!menu) return;
-    menu.setAttribute("aria-hidden", "true");
-    $("profileBtn").setAttribute("aria-expanded", "false");
+function resetLocal(){
+  if (!confirm("Сбросить локальный прогресс (слова, стрик)?")) return;
+  localStorage.removeItem(LS_WORDS);
+  localStorage.removeItem(LS_META);
+  alert("Готово. Метаданные пересчитаются при следующем открытии.");
 }
 
-function toggleMenu() {
-    const menu = $("profileMenu");
-    const hidden = menu.getAttribute("aria-hidden") !== "false";
-    hidden ? openMenu() : closeMenu();
-}
+// ---------- init ----------
+(function init(){
+  // гарантированно скрыть меню при загрузке
+  closeMenu();
 
-// Закрытие по клику вне и по Esc
-function setupDismiss() {
-    document.addEventListener("click", (e) => {
-        const menu = $("profileMenu"), btn = $("profileBtn");
-        if (!menu) return;
-        if (menu.contains(e.target) || btn.contains(e.target)) return;
-        closeMenu();
-    });
-    window.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") closeMenu();
-    });
-}
+  $("profileBtn")?.addEventListener("click", toggleMenu);
+  $("loginBtn")?.addEventListener("click", loginFlow);
+  $("logoutBtn")?.addEventListener("click", logoutFlow);
+  $("resetProgress")?.addEventListener("click", resetLocal);
 
-// Сброс локального прогресса
-function resetLocalProgress() {
-    if (!confirm("Сбросить локальный прогресс (слова, стрик, лимит)?")) return;
-    localStorage.removeItem(LS_WORDS);
-    localStorage.removeItem(LS_META);
-    closeMenu();
-    alert("Готово. Страница обновит метаданные при следующем открытии.");
-}
-
-// «Авторизация» на месте (смена отображаемого имени)
-function fakeAuthFlow() {
-    const cur = loadUser().name || "";
-    const name = prompt("Как тебя отображать в профиле?", cur) || "Гость";
-    saveUser({ name });
-    hydrateProfile(); // обновим шапку
-    closeMenu();
-}
-
-// Заполнение данных в меню
-function hydrateProfile() {
-    const user = loadUser();
-    const name = user.name || "Гость";
-    const meta = refreshDaily();
-    const limit = getDailyLimit(meta);
-
-    const init = initials(name);
-    const a1 = $("avatarInitials"), a2 = $("avatarInitialsSm");
-
-    if (a1) a1.textContent = init;
-    if (a2) a2.textContent = init;
-
-    const pn = $("profileName");
-    const ps = $("profileSub");
-    if (pn) pn.textContent = name;
-    if (ps) ps.textContent = `Стрик ${meta.streak} дн · лимит ${limit}`;
-}
-
-// Инициализация
-(function initProfile() {
-    const btn = $("profileBtn");
-    if (btn) btn.addEventListener("click", toggleMenu);
-
-    const resetBtn = $("resetProgress");
-    if (resetBtn) resetBtn.addEventListener("click", resetLocalProgress);
-
-    const authBtn = $("fakeAuth");
-    if (authBtn) authBtn.addEventListener("click", fakeAuthFlow);
-
-    setupDismiss();
-    hydrateProfile();
+  setupDismiss();
+  hydrateProfile();
 })();
+

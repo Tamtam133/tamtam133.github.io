@@ -18,28 +18,36 @@
 
       <!-- Профиль -->
       <div class="profile">
-        <button id="profileBtn" class="avatar" aria-haspopup="menu" aria-expanded="false" aria-controls="profileMenu"
-          title="Открыть профиль">
-          <span class="avatar-initials" id="avatarInitials">GK</span>
+        <button id="profileBtn" class="avatar" aria-haspopup="menu" aria-expanded="false" aria-controls="profileMenu">
+          <img id="avatarImg" class="avatar-img" alt="" hidden>
+          <span class="avatar-initials" id="avatarInitials">Г</span>
         </button>
 
-        <div id="profileMenu" class="profile-menu" role="menu" aria-hidden="true">
-          <div class="profile-card">
-            <div class="avatar avatar-sm"><span id="avatarInitialsSm">GK</span></div>
+        <div id="profileMenu" class="profile-menu" role="menu" aria-hidden="true" hidden>
+          <div class="profile-card" id="profileCard">
+            <div class="avatar avatar-sm">
+              <img id="avatarImgSm" class="avatar-img" alt="" hidden>
+              <span id="avatarInitialsSm">Г</span>
+            </div>
             <div class="profile-meta">
               <div class="profile-name" id="profileName">Гость</div>
               <div class="profile-sub muted" id="profileSub">Стрик 0 дн · лимит 10</div>
             </div>
           </div>
 
-          <a href="index.html" role="menuitem">Текст</a>
-          <a href="flashcards.html" role="menuitem">Карточки</a>
-          <a href="video.html" role="menuitem">Видео</a>
+          <div id="menuLinks">
+            <a href="index.html" role="menuitem">Текст</a>
+            <a href="flashcards.html" role="menuitem">Карточки</a>
+            <a href="video.html" role="menuitem">Видео</a>
+            <hr>
+          </div>
 
-          <hr />
+          <button id="loginBtn" role="menuitem">Войти / Зарегистрироваться</button>
+          <button id="logoutBtn" role="menuitem" class="hidden">Выйти</button>
 
-          <button id="resetProgress" role="menuitem" class="menu-danger">Сбросить локальный прогресс</button>
-          <button id="fakeAuth" role="menuitem">Войти / Сменить имя</button>
+          <hr>
+
+          <button id="fakeAuth" role="menuitem">Условия использования</button>
         </div>
       </div>
     </div>

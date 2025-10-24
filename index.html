@@ -1,11 +1,14 @@
 <!doctype html>
 <html lang="ru">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Мой корейский — Видео</title>
   <link rel="stylesheet" href="styles.css" />
+  <script src="profile.js" defer></script>
 </head>
+
 <body>
   <header class="site-header">
     <div class="container header-row">
@@ -14,11 +17,32 @@
         <span class="brand-title">Мой корейский</span>
       </a>
 
-      <nav class="site-nav">
-        <a href="index.html">Текст</a>
-        <a href="flashcards.html">Карточки</a>
-        <a href="video.html" aria-current="page">Видео</a>
-      </nav>
+      <!-- Профиль -->
+      <div class="profile">
+        <button id="profileBtn" class="avatar" aria-haspopup="menu" aria-expanded="false" aria-controls="profileMenu"
+          title="Открыть профиль">
+          <span class="avatar-initials" id="avatarInitials">GK</span>
+        </button>
+
+        <div id="profileMenu" class="profile-menu" role="menu" aria-hidden="true">
+          <div class="profile-card">
+            <div class="avatar avatar-sm"><span id="avatarInitialsSm">GK</span></div>
+            <div class="profile-meta">
+              <div class="profile-name" id="profileName">Гость</div>
+              <div class="profile-sub muted" id="profileSub">Стрик 0 дн · лимит 10</div>
+            </div>
+          </div>
+
+          <a href="index.html" role="menuitem">Текст</a>
+          <a href="flashcards.html" role="menuitem">Карточки</a>
+          <a href="video.html" role="menuitem">Видео</a>
+
+          <hr />
+
+          <button id="resetProgress" role="menuitem" class="menu-danger">Сбросить локальный прогресс</button>
+          <button id="fakeAuth" role="menuitem">Войти / Сменить имя</button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -36,7 +60,8 @@
     <section class="toolbar">
       <div class="search">
         <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20">
-          <path d="M21 21l-4.3-4.3M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M21 21l-4.3-4.3M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" />
         </svg>
         <input id="videoSearch" type="search" placeholder="Поиск" />
       </div>
@@ -175,5 +200,5 @@
     });
   </script>
 </body>
-</html>
 
+</html>

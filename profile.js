@@ -1,7 +1,7 @@
 // profile.js
-const LS_META   = "siteMeta";
-const LS_WORDS  = "myWords";
-const LS_USER   = "userProfile"; // { authed: bool, name: string, photoUrl: string }
+const LS_META    = "siteMeta";
+const LS_WORDS   = "myWords";
+const LS_USER    = "userProfile"; // { authed: bool, name: string, photoUrl: string }
 const BASE_LIMIT = 10;
 
 const $ = (id) => document.getElementById(id);
@@ -27,16 +27,39 @@ function saveUser(u){ localStorage.setItem(LS_USER, JSON.stringify(u)); }
 function initials(name=""){ const p=name.trim().split(/\s+/).filter(Boolean); if(!p.length) return "Г"; return (p[0][0]+(p[1]?.[0]||"")).toUpperCase(); }
 
 // ---------- menu open/close ----------
-function openMenu(){ const m=$("profileMenu"); if(!m) return; m.setAttribute("aria-hidden","false"); m.removeAttribute("hidden"); $("profileBtn")?.setAttribute("aria-expanded","true"); }
-function closeMenu(){ const m=$("profileMenu"); if(!m) return; m.setAttribute("aria-hidden","true"); m.setAttribute("hidden",""); $("profileBtn")?.setAttribute("aria-expanded","false"); }
-function toggleMenu(){ ( $("profileMenu")?.getAttribute("aria-hidden") !== "false" ) ? openMenu() : closeMenu(); }
+function isMenuOpen(){ const m=$("profileMenu"); return !!m && !m.hidden; }
+
+function openMenu(){
+  const m=$("profileMenu"); const b=$("profileBtn");
+  if(!m) return;
+  m.hidden = false;
+  m.setAttribute("aria-hidden","false");
+  b?.setAttribute("aria-expanded","true");
+}
+
+function closeMenu(){
+  const m=$("profileMenu"); const b=$("profileBtn");
+  if(!m) return;
+  m.hidden = true;
+  m.setAttribute("aria-hidden","true");
+  b?.setAttribute("aria-expanded","false");
+}
+
+function toggleMenu(){
+  isMenuOpen() ? closeMenu() : openMenu();
+}
 
 function setupDismiss(){
+  // Клик вне меню — закрываем
   document.addEventListener("click",(e)=>{
-    const m=$("profileMenu"), b=$("profileBtn"); if(!m||!b) return;
-    if (m.contains(e.target) || b.contains(e.target)) return;
+    const m=$("profileMenu"), b=$("profileBtn");
+    if(!m || !b) return;
+    const t = e.target;
+    if (m.contains(t) || b.contains(t)) return; // клики по меню/кнопке не закрывают
     closeMenu();
-  });
+  }, { passive: true });
+
+  // Esc — закрываем
   window.addEventListener("keydown",(e)=>{ if(e.key==="Escape") closeMenu(); });
 }
 
@@ -47,10 +70,10 @@ function hydrateProfile(){
   const name = isAuthed ? (user.name || "Без имени") : "Гость";
 
   // Аватар: фото или инициалы
-  const img  = $("avatarImg");
-  const init = $("avatarInitials");
-  const imgS = $("avatarImgSm");
-  const initS= $("avatarInitialsSm");
+  const img   = $("avatarImg");
+  const init  = $("avatarInitials");
+  const imgS  = $("avatarImgSm");
+  const initS = $("avatarInitialsSm");
 
   if (user.photoUrl) {
     if (img)  { img.src = user.photoUrl;  img.hidden = false; }
@@ -90,7 +113,6 @@ function hydrateProfile(){
 
 // ---------- actions ----------
 function loginFlow(){
-  // простой флоу: спросим имя и (опционально) ссылку на аватар
   const cur = loadUser();
   const name = prompt("Как тебя отображать в профиле?", cur.name || "") || "Пользователь";
   const photoUrl = prompt("URL картинки-аватара (можно оставить пустым):", cur.photoUrl || "") || "";
@@ -98,7 +120,6 @@ function loginFlow(){
   hydrateProfile(); closeMenu();
 }
 function logoutFlow(){
-  const keep = loadUser();
   saveUser({ authed: false, name: "Гость", photoUrl: "" }); // не трогаем слова/стрик
   hydrateProfile(); closeMenu();
 }
@@ -112,14 +133,26 @@ function resetLocal(){
 // ---------- init ----------
 (function init(){
   // гарантированно скрыть меню при загрузке
-  closeMenu();
+  const menu = $("profileMenu");
+  if (menu) {
+    menu.hidden = true;
+    menu.setAttribute("aria-hidden","true");
+    // чтобы клики внутри меню не считались «вне»
+    menu.addEventListener("click", (e)=> e.stopPropagation());
+  }
 
-  $("profileBtn")?.addEventListener("click", toggleMenu);
-  $("loginBtn")?.addEventListener("click", loginFlow);
-  $("logoutBtn")?.addEventListener("click", logoutFlow);
-  $("resetProgress")?.addEventListener("click", resetLocal);
+  const btn = $("profileBtn");
+  if (btn) {
+    btn.setAttribute("aria-haspopup","menu");
+    btn.setAttribute("aria-expanded","false");
+    // клики по кнопке не «пролетают» наружу
+    btn.addEventListener("click", (e)=>{ e.stopPropagation(); toggleMenu(); });
+  }
+
+  $("loginBtn")?.addEventListener("click", (e)=>{ e.stopPropagation(); loginFlow(); });
+  $("logoutBtn")?.addEventListener("click", (e)=>{ e.stopPropagation(); logoutFlow(); });
+  $("resetProgress")?.addEventListener("click", (e)=>{ e.stopPropagation(); resetLocal(); });
 
   setupDismiss();
   hydrateProfile();
 })();
-

@@ -54,6 +54,13 @@ a {
   backdrop-filter: saturate(180%) blur(8px);
 }
 
+.header-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 64px
+}
+
 .brand {
   display: flex;
   align-items: center;
@@ -67,14 +74,6 @@ a {
 
 .brand-title {
   letter-spacing: .2px
-}
-
-/* Шапка с профилем */
-.header-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
 }
 
 .profile {
@@ -172,13 +171,6 @@ a {
 
 .menu-danger {
   color: #a33;
-}
-
-/* На очень узких экранах переносим заголовок */
-@media (max-width: 520px) {
-  .header-bar {
-    flex-wrap: wrap;
-  }
 }
 
 .site-footer {

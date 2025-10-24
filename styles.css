@@ -54,13 +54,6 @@ a {
   backdrop-filter: saturate(180%) blur(8px);
 }
 
-.header-row {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  min-height: 64px
-}
-
 .brand {
   display: flex;
   align-items: center;

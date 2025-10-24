@@ -101,7 +101,7 @@ a {
   display: block;
 }
 
-.hidden { display: none !important; }
+.hidden { display: none }
 
 .avatar .avatar-initials {
   font-weight: 600;

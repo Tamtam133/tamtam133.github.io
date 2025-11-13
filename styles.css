@@ -4,7 +4,7 @@
   --card: #fff;
   --text: #1d2433;
   --muted: #6b7280;
-  --brand: #2f6df6;
+  --brand: #3B6D8D;
   --brand-ghost: #e7efff;
   --border: #e5e7eb;
   --chip: #111827cc;
@@ -37,7 +37,7 @@ a {
 .container {
   max-width: 1120px;
   margin: 0 auto;
-  padding: 0 16px
+  padding: 0 0px
 }
 
 .page {
@@ -70,11 +70,18 @@ a {
 }
 
 .brand-logo {
-  font-size: 22px
+    background-image: url('images/logo.png'); 
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
 }
 
 .brand-title {
-  letter-spacing: .2px
+  letter-spacing: .2px;
+  color: var(--brand);
 }
 
 .profile {
@@ -84,13 +91,17 @@ a {
 .avatar {
   display: inline-grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   border: 1px solid var(--border);
   background: #fff;
   cursor: pointer;
   padding: 0;
+}
+
+.avatar:hover {
+  box-shadow: 0 0 0 4px rgb(246, 247, 251); /* затемнённое кольцо вокруг */
 }
 
 .avatar-img {
@@ -178,6 +189,30 @@ a {
   border: none;
   border-top: 1px solid var(--border);
   margin: 6px 0;
+}
+
+/* Основные стили для иконок */
+.icon-streak::before,
+.icon-limit::before {
+    content: ""; /* Обязательное свойство для псевдоэлементов */
+    display: inline-block; /* Необходимо для задания размеров */
+    width: 20px; /* Ширина вашей иконки */
+    height: 20px; /* Высота вашей иконки */
+    vertical-align: middle; /* Выравнивание по центру текста */
+    margin-right: 4px; /* Небольшой отступ от текста */
+    background-size: contain; /* Обеспечивает полное отображение иконки */
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* Стилизация иконки "Стрик" */
+.icon-streak::before {
+    background-image: url('images/fire.png');
+}
+
+/* Стилизация иконки "Лимит" */
+.icon-limit::before {
+    background-image: url('images/steps.png');
 }
 
 .menu-danger {

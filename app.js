@@ -2,6 +2,7 @@
 const TEXT = "오늘 날씨가 아주 좋아요. 저는 커피를 마셔요. 공부합시다!";
 const LS_WORDS = "myWords";     // [{ word, ts, laps, nextAt }]
 const LS_META  = "siteMeta";    // { lastVisit: "YYYY-MM-DD", streak: number, addedToday: number }
+const LS_USER = "userProfile"; // { name: "Имя Фамилия" }
 const BASE_LIMIT = 10;
 
 function loadWords() {

@@ -1,134 +1,132 @@
-const LS_META    = "siteMeta";
-const LS_WORDS   = "myWords";
-const LS_USER    = "userProfile"; // { authed?: boolean, name?: string, photoUrl?: string }
-const BASE_LIMIT = 10;
-
 const $ = (id) => document.getElementById(id);
 
-// ---------- Метаданные / стрик ----------
-function loadMeta(){ try { return JSON.parse(localStorage.getItem(LS_META)) || {}; } catch { return {}; } }
-function saveMeta(m){ localStorage.setItem(LS_META, JSON.stringify(m)); }
-function todayStr(){ return new Date().toISOString().slice(0,10); }
-
-function refreshDaily(){
-  const m = loadMeta(); const t = todayStr();
-  if (!m.lastVisit) { const init = { lastVisit: t, streak: 1, addedToday: 0 }; saveMeta(init); return init; }
-  if (m.lastVisit === t) return m;
-  const diff = Math.round((new Date(t) - new Date(m.lastVisit)) / 86400000);
-  m.streak = diff === 1 ? (m.streak || 0) + 1 : 1;
-  m.lastVisit = t; m.addedToday = 0; saveMeta(m); return m;
+// ---------- Метаданные/стрик ----------
+function loadMeta() {
+    try { return JSON.parse(localStorage.getItem(LS_META)) || {}; }
+    catch { return {}; }
 }
-function getDailyLimit(meta){ const bonus = Math.floor((meta.streak || 1) / 3) * 5; return BASE_LIMIT + bonus; }
+function saveMeta(m) { localStorage.setItem(LS_META, JSON.stringify(m)); }
+function todayStr() { return new Date().toISOString().slice(0, 10); }
+
+function refreshDaily() {
+    const m = loadMeta();
+    const t = todayStr();
+    if (!m.lastVisit) {
+        const init = { lastVisit: t, streak: 1, addedToday: 0 };
+        saveMeta(init);
+        return init;
+    }
+    if (m.lastVisit === t) return m;
+    const prev = new Date(m.lastVisit), now = new Date(t);
+    const diff = Math.round((now - prev) / (24 * 60 * 60 * 1000));
+    m.streak = diff === 1 ? (m.streak || 0) + 1 : 1;
+    m.lastVisit = t;
+    m.addedToday = 0;
+    saveMeta(m);
+    return m;
+}
+function getDailyLimit(meta) {
+    const bonus = Math.floor((meta.streak || 1) / 3) * 5; // +5 за каждые 3 дня
+    return BASE_LIMIT + bonus;
+}
 
 // ---------- Пользователь ----------
-function loadUser(){ try { return JSON.parse(localStorage.getItem(LS_USER)) || {}; } catch { return {}; } }
-function saveUser(u){ localStorage.setItem(LS_USER, JSON.stringify(u)); }
-
-// ---------- Меню: open/close ----------
-function isMenuOpen(){
-  const m = $("profileMenu");
-  return !!m && m.getAttribute("aria-hidden") === "false";
+function loadUser() {
+    try { return JSON.parse(localStorage.getItem(LS_USER)) || {}; }
+    catch { return {}; }
+}
+function saveUser(u) { localStorage.setItem(LS_USER, JSON.stringify(u)); }
+function initials(name = "") {
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return "GK"; // Гость Кор
+    const i = (parts[0][0] || "") + (parts[1]?.[0] || "");
+    return i.toUpperCase();
 }
 
-function openMenu(){
-  const m=$("profileMenu"), b=$("profileBtn");
-  if(!m) return;
-  m.setAttribute("aria-hidden","false");
-  b?.setAttribute("aria-expanded","true");
+// ---------- Меню ----------
+function openMenu() {
+    const menu = $("profileMenu");
+    if (!menu) return;
+    menu.setAttribute("aria-hidden", "false");
+    $("profileBtn").setAttribute("aria-expanded", "true");
+}
+function closeMenu() {
+    const menu = $("profileMenu");
+    if (!menu) return;
+    menu.setAttribute("aria-hidden", "true");
+    $("profileBtn").setAttribute("aria-expanded", "false");
 }
 
-function closeMenu(){
-  const m=$("profileMenu"), b=$("profileBtn");
-  if(!m) return;
-  m.setAttribute("aria-hidden","true");
-  b?.setAttribute("aria-expanded","false");
+function toggleMenu() {
+    const menu = $("profileMenu");
+    const hidden = menu.getAttribute("aria-hidden") !== "false";
+    hidden ? openMenu() : closeMenu();
 }
 
-function toggleMenu(){ isMenuOpen() ? closeMenu() : openMenu(); }
+// Закрытие по клику вне и по Esc
+function setupDismiss() {
+    document.addEventListener("click", (e) => {
+        const menu = $("profileMenu"), btn = $("profileBtn");
+        if (!menu) return;
+        if (menu.contains(e.target) || btn.contains(e.target)) return;
+        closeMenu();
+    });
+    window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeMenu();
+    });
+}
 
-function setupDismiss(){
-  // клик вне меню — закрываем
-  document.addEventListener("click",(e)=>{
-    const m=$("profileMenu"), b=$("profileBtn");
-    if(!m || !b) return;
-    const t=e.target;
-    if (m.contains(t) || b.contains(t)) return;
+// Сброс локального прогресса
+function resetLocalProgress() {
+    if (!confirm("Сбросить локальный прогресс (слова, стрик, лимит)?")) return;
+    localStorage.removeItem(LS_WORDS);
+    localStorage.removeItem(LS_META);
     closeMenu();
-  }, { passive:true });
-
-  // Esc — закрываем
-  window.addEventListener("keydown",(e)=>{ if(e.key==="Escape") closeMenu(); });
+    alert("Готово. Страница обновит метаданные при следующем открытии.");
 }
 
-// ---------- Гидратация UI ----------
-function hydrateProfile(){
-  const user = loadUser();
-  const name = user.name || "Гость";
-  const meta = refreshDaily();
-  const limit = getDailyLimit(meta);
-
-  // Имя и статус
-  const pn = $("profileName"); if (pn) pn.textContent = name;
-  const ps = $("profileSub");  if (ps) ps.textContent = `Стрик ${meta.streak} дн · лимит ${limit}`;
-
-  // Если дадите photoUrl — покажем картинку (в вашем HTML <img> изначально hidden)
-  const img  = $("avatarImg");
-  const imgS = $("avatarImgSm");
-  if (user.photoUrl) {
-    if (img)  { img.src = user.photoUrl;  img.hidden = false; }
-    if (imgS) { imgS.src = user.photoUrl; imgS.hidden = false; }
-  }
+// «Авторизация» на месте (смена отображаемого имени)
+function fakeAuthFlow() {
+    const cur = loadUser().name || "";
+    const name = prompt("Как тебя отображать в профиле?", cur) || "Гость";
+    saveUser({ name });
+    hydrateProfile(); // обновим шапку
+    closeMenu();
 }
 
-// ---------- Простые действия (заглушки) ----------
-function fakeAuthFlow(){
-  const cur = loadUser();
-  const name = prompt("Как тебя отображать в профиле?", cur.name || "") || "Гость";
-  const photoUrl = prompt("URL картинки-аватара (можно пусто):", cur.photoUrl || "") || "";
-  saveUser({ authed: true, name, photoUrl });
-  hydrateProfile();
-  closeMenu();
+// Заполнение данных в меню
+function hydrateProfile() {
+    const user = loadUser();
+    const name = user.name || "Гость";
+    const meta = refreshDaily();
+    const limit = getDailyLimit(meta);
+    const init = initials(name);
+    const a1 = $("avatarInitials"), a2 = $("avatarInitialsSm");
+    if (a1) a1.textContent = init;
+    if (a2) a2.textContent = init;
+    const pn = $("profileName");
+    const streakEl = $("streakValue");
+    const limitEl = $("limitValue");
+    if (pn) pn.textContent = name;
+    if (streakEl) {
+        streakEl.textContent = `${meta.streak} дн`; 
+    }
+    if (limitEl) {
+        limitEl.textContent = limit; 
+    }
 }
 
-function loginFlow(){ fakeAuthFlow(); }
+// Инициализация
+(function initProfile() {
+    const btn = $("profileBtn");
+    if (btn) btn.addEventListener("click", toggleMenu);
 
-function logoutFlow(){
-  saveUser({ authed: false, name: "Гость", photoUrl: "" });
-  hydrateProfile();
-  closeMenu();
-}
+    const resetBtn = $("resetProgress");
+    if (resetBtn) resetBtn.addEventListener("click", resetLocalProgress);
 
-function resetLocal(){
-  if (!confirm("Сбросить локальный прогресс (слова, стрик)?")) return;
-  localStorage.removeItem(LS_WORDS);
-  localStorage.removeItem(LS_META);
-  alert("Готово. Метаданные пересчитаются при следующем открытии.");
-}
+    const authBtn = $("fakeAuth");
+    if (authBtn) authBtn.addEventListener("click", fakeAuthFlow);
 
-// ---------- init ----------
-(function init(){
-  // меню изначально скрыто: aria-hidden="true" уже в HTML
-  const menu = $("profileMenu");
-  if (menu) {
-    // клики внутри меню не считаем «вне»
-    menu.addEventListener("click", (e)=> e.stopPropagation());
-  }
-
-  const btn = $("profileBtn");
-  if (btn) {
-    btn.setAttribute("aria-haspopup","menu");
-    btn.setAttribute("aria-controls","profileMenu");
-    btn.setAttribute("aria-expanded","false");
-    // важно: гасим всплытие, чтобы обработчик «клик вне» не сработал
-    btn.addEventListener("click", (e)=>{ e.stopPropagation(); toggleMenu(); });
-  }
-
-  // Кнопки в меню (если присутствуют)
-  $("loginBtn")?.addEventListener("click", (e)=>{ e.stopPropagation(); loginFlow(); });
-  $("logoutBtn")?.addEventListener("click", (e)=>{ e.stopPropagation(); logoutFlow(); });
-  $("fakeAuth")?.addEventListener("click", (e)=>{ e.stopPropagation(); fakeAuthFlow(); });
-  $("resetProgress")?.addEventListener("click", (e)=>{ e.stopPropagation(); resetLocal(); });
-
-  setupDismiss();
-  hydrateProfile();
+    setupDismiss();
+    hydrateProfile();
 })();

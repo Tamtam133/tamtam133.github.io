@@ -197,7 +197,13 @@
 
     function parseSRT(data) {
       data = data.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-      const regex = /(\d+)\n(\d{2}:\d{2}:\d{2}[,.]\d{3}) --> (\d{2}:\d{2}:\d{2}[,.]\d{3})\n([\s\S]*?)(?=\n{2}|\n$|$)/g;
+      const regex = new RegExp(
+  '(\\d+)\\n' +
+  '(\\d{2}:\\d{2}:\\d{2}[,.]\\d{3})\\s-->\\s' +
+  '(\\d{2}:\\d{2}:\\d{2}[,.]\\d{3})\\n' +
+  '([\\s\\S]*?)(?:\\n{2,}|$)',
+  'g'
+);
       let m;
       const result = [];
       while ((m = regex.exec(data)) !== null) {

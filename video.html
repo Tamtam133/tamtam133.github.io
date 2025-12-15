@@ -4,29 +4,120 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>YouTube Puzzle English Clone</title>
+
   <link rel="stylesheet" href="styles.css" />
+
   <style>
-    /* Стили для паззлов поверх видео */
     .player-container { position: relative; width: 640px; margin: 0 auto; }
-    #puzzle-overlay {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.85); display: none; flex-direction: column;
-      align-items: center; justify-content: center; z-index: 10; color: white; padding: 20px; box-sizing: border-box;
+    .player-wrap { width: 640px; height: 360px; }
+
+    /* Сильное затемнение поверх видео */
+    #dim-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.92);  /* сильнее */
+      display: none;                 /* включаем при паззле */
+      z-index: 9;
+      pointer-events: none;          /* не блокирует клики по кнопкам снизу */
+      backdrop-filter: blur(1.5px);  /* можно убрать */
     }
-    .words-container { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px; }
-    .word-btn { 
-      padding: 8px 15px; background: #444; border: 1px solid #666; color: white; 
-      cursor: pointer; border-radius: 4px; font-size: 1.1em;
+
+    /* Панель управления поверх видео (минимальная) */
+    #puzzle-overlay {
+      position: absolute;
+      inset: 0;
+      display: none;
+      z-index: 10;
+      color: white;
+      box-sizing: border-box;
+      padding: 12px;
+      pointer-events: none; /* чтобы не ловить клики (управление будет ниже) */
+    }
+
+    /* Контент под плеером */
+    .puzzle-under {
+      width: 640px;
+      margin: 12px auto 0;
+      background: rgba(0,0,0,0.04);
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 10px;
+      padding: 12px;
+      box-sizing: border-box;
+    }
+
+    .puzzle-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .left-controls, .right-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .btn {
+      padding: 8px 12px;
+      background: #222;
+      border: 1px solid #444;
+      color: #fff;
+      cursor: pointer;
+      border-radius: 8px;
+      font-size: 0.95em;
+    }
+    .btn:hover { background: #333; }
+    .btn.secondary { background: #111; border-color: #333; opacity: 0.95; }
+    .btn.secondary:hover { background: #1b1b1b; }
+
+    .status {
+      color: #444;
+      font-size: 0.95em;
+      max-width: 360px;
+      line-height: 1.2;
+    }
+
+    .words-container { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 12px; }
+    .word-btn {
+      padding: 8px 15px;
+      background: #444;
+      border: 1px solid #666;
+      color: white;
+      cursor: pointer;
+      border-radius: 8px;
+      font-size: 1.05em;
     }
     .word-btn:hover { background: #666; }
-    .result-area { 
-      min-height: 50px; border-bottom: 2px solid #555; width: 100%; 
-      margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+
+    .result-area {
+      min-height: 56px;
+      border: 2px dashed rgba(0,0,0,0.18);
+      border-radius: 10px;
+      width: 100%;
+      margin-bottom: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+      padding: 8px;
+      box-sizing: border-box;
+      background: rgba(255,255,255,0.8);
     }
-    .word-btn.used { opacity: 0.3; pointer-events: none; }
-    .correct { color: #4caf50; font-weight: bold; margin-top: 10px; }
+
+    .word-btn.used { opacity: 0.25; pointer-events: none; }
+    .correct { color: #2e7d32; font-weight: 700; }
+    .wrong { color: #b71c1c; font-weight: 700; }
+
+    .muted { opacity: 0.8; }
+    .small { font-size: 0.92em; }
   </style>
 </head>
+
 <body>
   <header class="site-header">
     <div class="container">
@@ -38,18 +129,18 @@
     <section class="card">
       <div class="controls stack">
         <div class="row">
-            <label class="field">
-                <span class="label">ID или URL видео</span>
-                <input id="vid" type="text" placeholder="dQw4w9WgXcQ" />
-            </label>
-            <button id="load">Загрузить видео</button>
+          <label class="field">
+            <span class="label">ID или URL видео</span>
+            <input id="vid" type="text" placeholder="dQw4w9WgXcQ" />
+          </label>
+          <button id="load">Загрузить видео</button>
         </div>
 
         <div class="row">
-            <label class="field">
-                <span class="label">Файл субтитров (.srt)</span>
-                <input id="srtFile" type="file" accept=".srt" />
-            </label>
+          <label class="field">
+            <span class="label">Файл субтитров (.srt)</span>
+            <input id="srtFile" type="file" accept=".srt" />
+          </label>
         </div>
       </div>
     </section>
@@ -57,184 +148,270 @@
     <section class="card">
       <div class="player-container">
         <div id="player" class="player-wrap"></div>
-        <div id="puzzle-overlay">
-            <div id="result-area" class="result-area"></div>
-            <div id="words-pool" class="words-container"></div>
-            <button id="check-btn" style="display:none">Проверить</button>
-            <div id="feedback"></div>
-        </div>
+
+        <!-- сильное затемнение видео -->
+        <div id="dim-overlay"></div>
+
+        <!-- минимальный overlay (можно оставить пустым, но пусть будет) -->
+        <div id="puzzle-overlay"></div>
       </div>
-      <p class="muted small">Загрузите видео и SRT файл. Видео остановится в конце каждой фразы.</p>
+
+      <!-- ПАЗЗЛ ПОД ПЛЕЕРОМ -->
+      <div id="puzzle-under" class="puzzle-under" style="display:none;">
+        <div class="puzzle-controls">
+          <div class="left-controls">
+            <button id="listen-btn" class="btn">Слушать фразу</button>
+            <button id="listen-1s-btn" class="btn secondary">Повторить -1 сек.</button>
+            <button id="skip-btn" class="btn secondary">Пропустить</button>
+          </div>
+
+          <div class="right-controls">
+            <div id="feedback" class="status"></div>
+          </div>
+        </div>
+
+        <div id="result-area" class="result-area"></div>
+        <div id="words-pool" class="words-container"></div>
+      </div>
+
+      <p class="muted small">
+        Загрузите видео и SRT файл. Видео остановится в конце каждой фразы, затем появятся слова для сборки.
+      </p>
     </section>
   </main>
 
   <script>
-  const $ = (id) => document.getElementById(id);
+    const $ = (id) => document.getElementById(id);
 
-  let ytPlayer = null;
-  let playerReady = false;
+    let ytPlayer = null;
+    let playerReady = false;
 
-  let subtitles = [];
-  let currentSubIndex = -1;
-  let userSentence = [];
+    let subtitles = [];
+    let currentSubIndex = -1;
+    let userSentence = [];
 
-  let tickTimer = null;
+    let tickTimer = null;
 
-  function parseSRT(data) {
-    data = data.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-    const regex = /(\d+)\n(\d{2}:\d{2}:\d{2}[,.]\d{3}) --> (\d{2}:\d{2}:\d{2}[,.]\d{3})\n([\s\S]*?)(?=\n{2}|\n$|$)/g;
-    let m;
-    const result = [];
-    while ((m = regex.exec(data)) !== null) {
-      result.push({
-        start: timeToSeconds(m[2]),
-        end: timeToSeconds(m[3]),
-        text: m[4]
+    // режим "прослушать отрывок"
+    let listenMode = false;
+
+    function parseSRT(data) {
+      data = data.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+      const regex = /(\d+)\n(\d{2}:\d{2}:\d{2}[,.]\d{3}) --> (\d{2}:\d{2}:\d{2}[,.]\d{3})\n([\s\S]*?)(?=\n{2}|\n$|$)/g;
+      let m;
+      const result = [];
+      while ((m = regex.exec(data)) !== null) {
+        const clean = m[4]
           .replace(/<[^>]*>/g, '')
           .replace(/\n/g, ' ')
           .replace(/[.,!?;:"-]/g, '')
-          .trim(),
-        solved: false
+          .trim();
+
+        if (!clean) continue;
+
+        result.push({
+          start: timeToSeconds(m[2]),
+          end: timeToSeconds(m[3]),
+          text: clean,
+          solved: false
+        });
+      }
+      if (result.length === 0) alert("Не найдено фраз. Проверьте формат SRT.");
+      else alert(`Загружено фраз: ${result.length}`);
+      return result;
+    }
+
+    function timeToSeconds(timeStr) {
+      timeStr = timeStr.replace('.', ',');
+      const [h, m, s] = timeStr.split(':');
+      const [sec, ms] = s.split(',');
+      return parseInt(h) * 3600 + parseInt(m) * 60 + parseInt(sec) + parseInt(ms) / 1000;
+    }
+
+    function showPuzzleUI(show) {
+      $("puzzle-under").style.display = show ? "block" : "none";
+      $("dim-overlay").style.display = show ? "block" : "none";
+      $("puzzle-overlay").style.display = show ? "block" : "none";
+    }
+
+    function initPuzzle(text) {
+      const words = text.split(/\s+/).filter(Boolean).sort(() => Math.random() - 0.5);
+
+      userSentence = [];
+      $("words-pool").innerHTML = '';
+      $("result-area").innerHTML = '';
+      $("feedback").textContent = '';
+
+      showPuzzleUI(true);
+
+      // ставим на паузу
+      ytPlayer?.pauseVideo?.();
+
+      // выводим ВСЕ слова под плеером
+      words.forEach((word) => {
+        const btn = document.createElement('button');
+        btn.className = 'word-btn';
+        btn.textContent = word;
+        btn.onclick = () => {
+          if (btn.classList.contains('used')) return;
+          btn.classList.add('used');
+          userSentence.push(word);
+          renderUserSentence(text);
+        };
+        $("words-pool").appendChild(btn);
       });
     }
-    if (result.length === 0) alert("Не найдено фраз. Проверьте формат SRT.");
-    else alert(`Загружено фраз: ${result.length}`);
-    return result;
-  }
 
-  function timeToSeconds(timeStr) {
-    timeStr = timeStr.replace('.', ',');
-    const [h, m, s] = timeStr.split(':');
-    const [sec, ms] = s.split(',');
-    return parseInt(h) * 3600 + parseInt(m) * 60 + parseInt(sec) + parseInt(ms) / 1000;
-  }
+    function renderUserSentence(originalText) {
+      $("result-area").innerHTML = '';
+      userSentence.forEach(word => {
+        const span = document.createElement('span');
+        span.className = 'word-btn';
+        span.textContent = word;
+        $("result-area").appendChild(span);
+      });
 
-  function initPuzzle(text) {
-    const words = text.split(' ').sort(() => Math.random() - 0.5);
-    userSentence = [];
-    $("words-pool").innerHTML = '';
-    $("result-area").innerHTML = '';
-    $("puzzle-overlay").style.display = 'flex';
-    $("feedback").textContent = '';
-
-    if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') {
-      ytPlayer.pauseVideo();
+      if (userSentence.join(' ') === originalText) {
+        $("feedback").innerHTML = '<span class="correct">Правильно!</span>';
+        setTimeout(() => {
+          // закрыть паззл и продолжить видео
+          showPuzzleUI(false);
+          subtitles[currentSubIndex].solved = true;
+          ytPlayer?.playVideo?.();
+        }, 600);
+      } else {
+        // мягкая подсказка (не ругаемся, просто показываем прогресс)
+        const total = originalText.split(/\s+/).filter(Boolean).length;
+        $("feedback").innerHTML = `<span class="muted">Собрано: ${userSentence.length}/${total}</span>`;
+      }
     }
 
-    words.forEach((word) => {
-      const btn = document.createElement('button');
-      btn.className = 'word-btn';
-      btn.textContent = word;
-      btn.onclick = () => {
-        if (btn.classList.contains('used')) return;
-        btn.classList.add('used');
-        userSentence.push(word);
-        renderUserSentence(text);
-      };
-      $("words-pool").appendChild(btn);
-    });
-  }
+    function listenCurrentSnippet(offsetSeconds = 0) {
+      if (!ytPlayer?.seekTo) return;
+      if (currentSubIndex === -1) return;
 
-  function renderUserSentence(originalText) {
-    $("result-area").innerHTML = '';
-    userSentence.forEach(word => {
-      const span = document.createElement('span');
-      span.className = 'word-btn';
-      span.textContent = word;
-      $("result-area").appendChild(span);
-    });
-
-    if (userSentence.join(' ') === originalText) {
-      $("feedback").innerHTML = '<span class="correct">Правильно!</span>';
-      setTimeout(() => {
-        $("puzzle-overlay").style.display = 'none';
-        subtitles[currentSubIndex].solved = true;
-        ytPlayer?.playVideo?.();
-      }, 700);
-    }
-  }
-
-  function tick() {
-    if (!ytPlayer?.getCurrentTime) return;
-    if (!subtitles.length) return;
-
-    const t = ytPlayer.getCurrentTime();
-
-    // ищем активную фразу
-    const subIdx = subtitles.findIndex(s => t >= s.start && t <= s.end);
-    if (subIdx !== -1) currentSubIndex = subIdx;
-
-    // если мы уже в какой-то фразе и дошли до конца — показываем паззл
-    if (currentSubIndex !== -1) {
       const s = subtitles[currentSubIndex];
-      if (t >= s.end && !s.solved && $("puzzle-overlay").style.display !== 'flex') {
-        initPuzzle(s.text);
+      if (!s) return;
+
+      // включаем режим "слушаем отрывок" — чтобы в конце отрывка снова показать паззл
+      listenMode = true;
+
+      showPuzzleUI(false);     // пока слушаем — убираем слова
+      ytPlayer.pauseVideo();
+
+      const start = Math.max(0, s.start + offsetSeconds);
+      ytPlayer.seekTo(start, true);
+      ytPlayer.playVideo();
+    }
+
+    function tick() {
+      if (!ytPlayer?.getCurrentTime) return;
+      if (!subtitles.length) return;
+
+      const t = ytPlayer.getCurrentTime();
+
+      // ищем активную фразу
+      const subIdx = subtitles.findIndex(s => t >= s.start && t <= s.end);
+      if (subIdx !== -1) currentSubIndex = subIdx;
+
+      if (currentSubIndex !== -1) {
+        const s = subtitles[currentSubIndex];
+
+        // 1) если мы слушаем отрывок, то в конце отрывка возвращаем паззл
+        if (listenMode && t >= s.end) {
+          listenMode = false;
+          initPuzzle(s.text);          // снова показываем слова
+          return;
+        }
+
+        // 2) обычный режим: дошли до конца фразы — остановка и паззл
+        if (!listenMode && t >= s.end && !s.solved && $("puzzle-under").style.display !== 'block') {
+          initPuzzle(s.text);
+          return;
+        }
       }
     }
-  }
 
-  function onStateChange(e) {
-    if (e.data === YT.PlayerState.PLAYING) {
-      if (tickTimer) return;               // не плодим интервалы
-      tickTimer = setInterval(tick, 200);
-    } else {
-      if (tickTimer) {
-        clearInterval(tickTimer);
-        tickTimer = null;
+    function onStateChange(e) {
+      if (e.data === YT.PlayerState.PLAYING) {
+        if (tickTimer) return;
+        tickTimer = setInterval(tick, 150);
+      } else {
+        if (tickTimer) {
+          clearInterval(tickTimer);
+          tickTimer = null;
+        }
       }
     }
-  }
 
-  window.onYouTubeIframeAPIReady = function () {
-    ytPlayer = new YT.Player("player", {
-      height: "360",
-      width: "640",
-      playerVars: {
-        playsinline: 1,
-        origin: location.origin
-      },
-      events: {
-        onReady: () => {
-          playerReady = true;
-          console.log("YouTube player is ready");
+    // YouTube API глобально
+    window.onYouTubeIframeAPIReady = function () {
+      ytPlayer = new YT.Player("player", {
+        height: "360",
+        width: "640",
+        playerVars: {
+          playsinline: 1,
+          origin: location.origin
         },
-        onStateChange: onStateChange
-      }
-    });
-  };
-
-  $("load").onclick = () => {
-    const id = extractId($("vid").value);
-
-    if (!playerReady) {
-      alert("Плеер YouTube еще не готов. Открой консоль — должно быть 'YouTube player is ready'.");
-      return;
-    }
-    if (id) ytPlayer.loadVideoById(id);
-  };
-
-  $("srtFile").onchange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      subtitles = parseSRT(event.target.result);
-      currentSubIndex = -1;
+        events: {
+          onReady: () => {
+            playerReady = true;
+            console.log("YouTube player is ready");
+          },
+          onStateChange: onStateChange
+        }
+      });
     };
-    reader.readAsText(file);
-  };
 
-  function extractId(url) {
-    if (!url) return null;
-    const m = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w-]{11})/);
-    return m ? m[1] : url.trim();
-  }
+    // Кнопка "Загрузить видео"
+    $("load").onclick = () => {
+      const id = extractId($("vid").value);
 
-  // Подключение API
-  const tag = document.createElement("script");
-  tag.src = "https://www.youtube.com/iframe_api";
-  document.body.appendChild(tag);
-</script>
+      if (!playerReady) {
+        alert("Плеер YouTube еще не готов. Если ты открыла файл через file:// — запусти через локальный сервер (Live Server / localhost).");
+        return;
+      }
+      if (id) ytPlayer.loadVideoById(id);
+    };
+
+    // Загрузка SRT
+    $("srtFile").onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        subtitles = parseSRT(event.target.result);
+        currentSubIndex = -1;
+      };
+      reader.readAsText(file);
+    };
+
+    // Кнопки управления под плеером
+    $("listen-btn").onclick = () => listenCurrentSnippet(0);
+    $("listen-1s-btn").onclick = () => listenCurrentSnippet(-1);
+
+    $("skip-btn").onclick = () => {
+      if (currentSubIndex === -1) {
+        showPuzzleUI(false);
+        ytPlayer?.playVideo?.();
+        return;
+      }
+      // помечаем как решённое и продолжаем
+      subtitles[currentSubIndex].solved = true;
+      showPuzzleUI(false);
+      ytPlayer?.playVideo?.();
+    };
+
+    function extractId(url) {
+      if (!url) return null;
+      const m = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w-]{11})/);
+      return m ? m[1] : url.trim();
+    }
+
+    // Подключение API
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.body.appendChild(tag);
+  </script>
 </body>
 </html>
-

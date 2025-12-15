@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Видео-паззл YouTube</title>
+    <link rel="stylesheet" href="styles.css" />
+    
+    <style>
+        .puzzle-interface {
+            padding: 15px;
+            background: #fff8e1;
+            border: 1px solid #ffecb3;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+        .puzzle-line {
+            min-height: 40px;
+            margin-bottom: 10px;
+            border: 1px dashed #ccc;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        .selected-line {
+            min-height: 48px;
+            border: 1px solid #2ecc71; /* Граница для собранной фразы */
+            background-color: #e6ffe6;
+            margin-bottom: 20px;
+        }
+        .token {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 4px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.1s;
+            user-select: none;
+            font-weight: 500;
+        }
+        .token-bank {
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+        }
+        .token-selected {
+            background-color: #2ecc71;
+            color: white;
+            border: 1px solid #27ae60;
+        }
+        .token:hover {
+            opacity: 0.8;
+        }
+        .solved-message {
+            color: #27ae60;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <h1 class="site-title">Видео-паззл YouTube</h1>
+            <nav class="site-nav">
+                <a href="index.html">Текст</a>
+                <a href="flashcards.html">Карточки</a>
+                <a href="video.html" aria-current="page">Видео</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="card">
+            <div class="controls stack">
+                <label class="field">
+                    <span class="label">ID или URL видео</span>
+                    <input id="vid" type="text" placeholder="dQw4w9WgXcQ" />
+                </label>
+
+                <div class="row">
+                    <button id="load">Загрузить видео</button>
+
+                    <label class="field small">
+                        <span class="label">Скорость</span>
+                        <select id="rate">
+                            <option value="0.75">0.75×</option>
+                            <option value="1" selected>1×</option>
+                            <option value="1.25">1.25×</option>
+                            <option value="1.5">1.5×</option>
+                        </select>
+                    </label>
+                </div>
+                
+                <h3 style="margin-top: 1em;">2. Загрузка субтитров (формат SRT)</h3>
+                <label class="field">
+                    <textarea id="srt-input" rows="6" placeholder="Вставьте сюда текст субтитров в формате SRT..."></textarea>
+                </label>
+                <button id="load-subs">Загрузить субтитры и начать игру</button>
+                <p id="sub-status" class="muted small"></p>
+
+            </div>
+        </section>
+
+        <section class="card">
+            <div id="player" class="player-wrap" aria-label="YouTube player"></div>
+            
+            <div id="puzzle-area" class="puzzle-interface" style="display: none;">
+                </div>
+            
+            <p class="muted small">
+                Горячие клавиши: <b>Пробел</b> — пауза/воспроизведение.
+            </p>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <small>© Твой проект по корейскому</small>
+        </div>
+    </footer>
+
+    <script>
+        // ... JavaScript код ниже ...
+    </script>
+</body>
+</html>

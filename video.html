@@ -385,7 +385,7 @@
       return (i < subtitles.length) ? i : null;
     }
 
-    function openNextPuzzle() {
+    function openNextPuzzle({ autoplay = false } = {}) {
       if (!subtitles.length) return;
 
       const idx = getNextUnsolvedIdx(nextIdx);
@@ -398,8 +398,19 @@
       }
 
       nextIdx = idx;
+
+      // открыли пазл (seek + pause + слова)
       initPuzzleByIndex(idx);
+
+      // если надо — сразу проигрываем отрывок
+      if (autoplay) {
+        // небольшой таймаут, чтобы DOM успел обновиться и YouTube спокойно принял playVideo
+        setTimeout(() => {
+          playSnippet(idx, 0);
+        }, 50);
+      }
     }
+
 
     function maybeStartFirstPuzzle() {
       if (!playerReady) return;
@@ -453,8 +464,7 @@
 
           activePuzzleIdx = null;
 
-          // вместо скрытия и playVideo — сразу следующий пазл
-          openNextPuzzle();
+          openNextPuzzle({ autoplay: true });
         }, 450);
 
       } else {
@@ -623,7 +633,7 @@
       nextIdx = Math.max(nextIdx, idx + 1);
 
       activePuzzleIdx = null;
-      openNextPuzzle();
+      openNextPuzzle({ autoplay: true });
     };
 
     function extractId(url) {

@@ -152,6 +152,28 @@
     .small {
       font-size: 0.92em;
     }
+
+    .loader-bar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .loader-input {
+      flex: 1 1 320px;
+      min-width: 220px;
+      height: 40px;
+      padding: 0 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(0, 0, 0, 0.18);
+      outline: none;
+    }
+
+    .loader-file {
+      flex: 0 0 auto;
+      height: 40px;
+    }
   </style>
 </head>
 
@@ -164,22 +186,14 @@
 
   <main class="container">
     <section class="card">
-      <div class="controls stack">
-        <div class="row">
-          <label class="field">
-            <span class="label">ID или URL видео</span>
-            <input id="vid" type="text" placeholder="dQw4w9WgXcQ" />
-          </label>
-          <button id="load">Загрузить видео</button>
-        </div>
+      <div class="loader-bar">
+        <input id="vid" class="loader-input" type="text" placeholder="ID или URL видео (dQw4w9WgXcQ)" />
+        <button id="load" class="btn">Загрузить</button>
 
-        <div class="row">
-          <label class="field">
-            <span class="label">Файл субтитров (.srt)</span>
-            <input id="srtFile" type="file" accept=".srt" />
-          </label>
-        </div>
+        <input id="srtFile" class="loader-file" type="file" accept=".srt" />
       </div>
+
+      <div class="muted small" id="file-hint" style="margin-top:8px;"></div>
     </section>
 
     <section class="card">
@@ -235,11 +249,15 @@
     let snippetEnd = 0;
     let snippetIdx = null;
 
-    function showPuzzleUI(show) {
+    function setPuzzlePanel(show) {
       $("puzzle-under").style.display = show ? "block" : "none";
+    }
+
+    function setVideoDim(show) {
       $("dim-overlay").style.display = show ? "block" : "none";
       $("puzzle-overlay").style.display = show ? "block" : "none";
     }
+
 
     function timeToSeconds(timeStr) {
       timeStr = timeStr.replace('.', ',');
@@ -299,7 +317,7 @@
         if (!tokens.length) continue;
         const clean = tokens.join(' ');
 
-        result.push({ start, end, text: clean, solved: false });
+        result.push({ start, end, text: clean, tokens, solved: false });
       }
 
       result.sort((a, b) => a.start - b.start);
@@ -320,8 +338,10 @@
       $("result-area").innerHTML = '';
       $("feedback").textContent = '';
 
-      showPuzzleUI(true);
+      setPuzzlePanel(true);
+      setVideoDim(true);
       ytPlayer?.pauseVideo?.();
+      scrollToPuzzle();
 
       for (const word of words) {
         const btn = document.createElement('button');
@@ -397,7 +417,8 @@
           nextIdx = Math.max(nextIdx, idx + 1);
 
           activePuzzleIdx = null;
-          showPuzzleUI(false);
+          setPuzzlePanel(false);
+          setVideoDim(false);
           ytPlayer?.playVideo?.();
         }, 450);
 
@@ -420,12 +441,28 @@
       snippetIdx = idx;
       snippetEnd = s.end;
 
-      // прячем паззл на время прослушивания
-      showPuzzleUI(false);
+      if (snippetResumePuzzle) {
+        setVideoDim(false);
+      }
 
       const start = Math.max(0, s.start + offsetSeconds);
       ytPlayer.seekTo(start, true);
       ytPlayer.playVideo();
+    }
+
+    function scrollToEl(el) {
+      if (!el) return;
+      requestAnimationFrame(() => {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    }
+
+    function scrollToPuzzle() {
+      scrollToEl($("puzzle-under"));
+    }
+
+    function scrollToPlayer() {
+      scrollToEl($("player"));
     }
 
     function tick() {
@@ -441,7 +478,7 @@
           ytPlayer.pauseVideo();
 
           if (snippetResumePuzzle) {
-            showPuzzleUI(true);
+            setVideoDim(true);
           } else {
             initPuzzleByIndex(snippetIdx);
           }
@@ -516,6 +553,8 @@
         startSeconds: 0
       });
 
+      scrollToPlayer();
+
       // и на всякий случай сразу синхронизируем nextIdx
       // (плеер может ещё не успеть обновить время, поэтому делаем через небольшой таймаут)
       setTimeout(() => {
@@ -565,7 +604,8 @@
       nextIdx = Math.max(nextIdx, idx + 1);
 
       activePuzzleIdx = null;
-      showPuzzleUI(false);
+      setPuzzlePanel(false);
+      setVideoDim(false);
       ytPlayer?.playVideo?.();
     };
 

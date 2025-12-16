@@ -177,6 +177,8 @@
 
     let tickTimer = null;
 
+    let snippetResumePuzzle = false;
+
     // какой субтитр следующий по порядку
     let nextIdx = 0;
 
@@ -331,6 +333,8 @@
       if (!ytPlayer?.seekTo) return;
       if (idx == null || idx < 0 || idx >= subtitles.length) return;
 
+      snippetResumePuzzle = (activePuzzleIdx != null && activePuzzleIdx === idx);
+
       const s = subtitles[idx];
 
       snippetMode = true;
@@ -353,13 +357,19 @@
 
       // если слушаем фрагмент — в конце останавливаем и возвращаем паззл того же индекса
       if (snippetMode) {
-        if (t >= snippetEnd - 0.05) {
-          snippetMode = false;
-          ytPlayer.pauseVideo();
-          initPuzzleByIndex(snippetIdx);
-        }
-        return;
-      }
+  if (t >= snippetEnd - 0.05) {
+    snippetMode = false;
+    ytPlayer.pauseVideo();
+
+    if (snippetResumePuzzle) {
+      showPuzzleUI(true);
+    } else {
+      initPuzzleByIndex(snippetIdx);
+    }
+  }
+  return;
+}
+
 
       // пропускаем уже решённые
       while (nextIdx < subtitles.length && subtitles[nextIdx].solved) nextIdx++;

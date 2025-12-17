@@ -209,66 +209,45 @@
       top: 12px;
     }
 
-    .subs-panel-head {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 12px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    }
-
-    .subs-title {
-      font-weight: 700;
-      color: #222;
-    }
-
-    .current-line-wrap {
-      margin-top: 10px;
-      padding: 10px;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.75);
-      border: 1px solid rgba(0, 0, 0, 0.08);
-    }
-
-    .current-line {
-      font-size: 1.05em;
-      line-height: 1.35;
-      color: #111;
-      word-break: break-word;
-    }
-
     .subs-log {
+      list-style: none;
+      /* убираем маркеры/цифры */
       margin: 0;
-      padding-left: 18px;
+      padding: 0;
+
       max-height: 520px;
       overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
     .subs-log li {
-      padding: 8px 10px;
-      margin: 0 0 8px 0;
+      padding: 10px 12px;
       border-radius: 10px;
       background: rgba(255, 255, 255, 0.72);
       border: 1px solid rgba(0, 0, 0, 0.08);
       line-height: 1.35;
+      word-break: break-word;
+
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
     }
+
 
     /* статусы прохождения */
     .subs-log li.done::before {
-      content: "✅ ";
+      content: "✔";
+      line-height: 1.2;
+      flex: 0 0 auto;
     }
 
     .subs-log li.skipped::before {
-      content: "⏭ ";
+      content: "✖";
       opacity: 0.9;
-    }
-
-    .subs-log li .meta {
-      display: block;
-      margin-top: 4px;
-      font-size: 0.82em;
-      opacity: 0.75;
+      line-height: 1.2;
+      flex: 0 0 auto;
     }
 
     /* на узких экранах — в столбик */
@@ -336,21 +315,8 @@
           </p>
         </div>
 
-        <aside class="subs-panel" aria-label="Оригинальные строки субтитров">
-          <div class="subs-panel-head">
-            <div class="subs-title">Оригинальные строки</div>
-            <div class="subs-hint muted small">Добавляются по мере прохождения</div>
-          </div>
-
-          <div class="current-line-wrap">
-            <div class="muted small" style="margin-bottom:6px;">Текущая:</div>
-            <div id="current-line" class="current-line">—</div>
-          </div>
-
-          <div class="passed-wrap">
-            <div class="muted small" style="margin:12px 0 6px;">Пройдено:</div>
-            <ol id="subs-log" class="subs-log"></ol>
-          </div>
+        <aside class="subs-panel" aria-label="Пройденно">
+          <ul id="subs-log" class="subs-log"></ul>
         </aside>
       </div>
     </section>
@@ -389,25 +355,6 @@
       loggedSolved = new Set();
       const log = $("subs-log");
       if (log) log.innerHTML = "";
-      const cur = $("current-line");
-      if (cur) cur.textContent = "—";
-    }
-
-    function formatTime(sec) {
-      const s = Math.max(0, sec);
-      const mm = Math.floor(s / 60);
-      const ss = Math.floor(s % 60);
-      return `${mm}:${String(ss).padStart(2, "0")}`;
-    }
-
-    function setCurrentLine(idx) {
-      const el = $("current-line");
-      if (!el) return;
-      if (idx == null || !subtitles[idx]) {
-        el.textContent = "—";
-        return;
-      }
-      el.textContent = subtitles[idx].text;
     }
 
     function addSolvedLineToLog(idx, status /* 'done' | 'skipped' */) {
@@ -425,21 +372,12 @@
       const li = document.createElement("li");
       li.className = status === "skipped" ? "skipped" : "done";
 
-      // текст (через textContent, чтобы не было проблем с HTML)
-      const textSpan = document.createElement("span");
-      textSpan.textContent = s.text;
-
-      // маленькая мета-инфа по времени (по желанию — можно убрать)
-      const meta = document.createElement("span");
-      meta.className = "meta";
-      meta.textContent = `${formatTime(s.start)} → ${formatTime(s.end)}`;
-
-      li.appendChild(textSpan);
-      li.appendChild(meta);
+      // только текст
+      li.textContent = s.text;
 
       log.appendChild(li);
 
-      // автоскролл вниз, чтобы всегда было видно последнее добавленное
+      // автоскролл вниз
       log.scrollTop = log.scrollHeight;
     }
 
@@ -526,7 +464,6 @@
 
       activePuzzleIdx = idx;
       const s = subtitles[idx];
-      setCurrentLine(idx);
       ytPlayer?.seekTo?.(Math.max(0, s.start), true);
       ytPlayer?.pauseVideo?.();
       const tokens = subtitles[idx].tokens ?? subtitles[idx].text.split(/\s+/).filter(Boolean);
@@ -794,7 +731,7 @@
         subtitles = parseSRT(event.target.result);
 
         resetSubsPanel();
-        
+
         setTimeout(() => {
           maybeStartFirstPuzzle();
         }, 0);

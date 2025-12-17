@@ -239,16 +239,32 @@
     /* статусы прохождения */
     .subs-log li.done::before {
       content: "✔";
+      color: #2e7d32;
       line-height: 1.2;
       flex: 0 0 auto;
     }
 
     .subs-log li.skipped::before {
       content: "✖";
+      color: #c62828;
       opacity: 0.9;
       line-height: 1.2;
       flex: 0 0 auto;
     }
+
+    .subs-log li .line-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .subs-log li .tr {
+      color: rgba(0, 0, 0, 0.45);
+      /* светло-серый */
+      font-size: 0.95em;
+      line-height: 1.25;
+    }
+
 
     /* на узких экранах — в столбик */
     @media (max-width: 980px) {
@@ -279,9 +295,10 @@
         <button id="load" class="btn">Загрузить</button>
 
         <input id="srtFile" class="loader-file" type="file" accept=".srt" />
+        <input id="srtFileTr" class="loader-file" type="file" accept=".srt" />
       </div>
 
-      <div class="muted small" id="file-hint" style="margin-top:8px;"></div>
+      <div class="muted small" id="file-hint" style="margin-top:8px;">1-й SRT — оригинал, 2-й SRT — перевод</div>
     </section>
 
     <section class="card">
@@ -329,6 +346,7 @@
     let playerReady = false;
 
     let subtitles = [];
+    let translations = [];
     let userSentence = [];
 
     let tickTimer = null;
@@ -355,12 +373,12 @@
       loggedSolved = new Set();
       const log = $("subs-log");
       if (log) log.innerHTML = "";
+      translations = [];
     }
 
     function addSolvedLineToLog(idx, status /* 'done' | 'skipped' */) {
       if (idx == null || !subtitles[idx]) return;
 
-      // не дублируем
       if (loggedSolved.has(idx)) return;
       loggedSolved.add(idx);
 
@@ -368,18 +386,33 @@
       if (!log) return;
 
       const s = subtitles[idx];
+      const tr = getTranslationText(idx);
 
       const li = document.createElement("li");
       li.className = status === "skipped" ? "skipped" : "done";
 
-      // только текст
-      li.textContent = s.text;
+      const wrap = document.createElement("div");
+      wrap.className = "line-wrap";
 
+      const srcSpan = document.createElement("div");
+      srcSpan.textContent = s.text;
+
+      wrap.appendChild(srcSpan);
+
+      // если перевод загружен и есть строка — показываем
+      if (tr) {
+        const trSpan = document.createElement("div");
+        trSpan.className = "tr";
+        trSpan.textContent = tr;
+        wrap.appendChild(trSpan);
+      }
+
+      li.appendChild(wrap);
       log.appendChild(li);
 
-      // автоскролл вниз
       log.scrollTop = log.scrollHeight;
     }
+
 
 
     function setPuzzlePanel(show) {
@@ -457,6 +490,49 @@
 
       alert(`Загружено фраз: ${result.length}`);
       return result;
+    }
+
+    function parseSRTPlain(data) {
+      data = data
+        .replace(/^\uFEFF/, '')
+        .replace(/\r\n/g, '\n')
+        .replace(/\r/g, '\n')
+        .trim();
+
+      const blocks = data.split(/\n{2,}/);
+      const result = [];
+
+      for (const block of blocks) {
+        const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
+        if (lines.length < 2) continue;
+
+        const timeLineIndex = lines.findIndex(l => l.includes('-->'));
+        if (timeLineIndex === -1) continue;
+
+        const timeLine = lines[timeLineIndex];
+        const m = timeLine.match(
+          /(\d{2}:\d{2}:\d{2}[,.]\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}[,.]\d{3})/
+        );
+        if (!m) continue;
+
+        const start = timeToSeconds(m[1]);
+        const end = timeToSeconds(m[2]);
+
+        // текст без тегов, но с пунктуацией
+        const textRaw = lines.slice(timeLineIndex + 1).join(' ');
+        const clean = textRaw.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+        if (!clean) continue;
+
+        result.push({ start, end, text: clean });
+      }
+
+      result.sort((a, b) => a.start - b.start);
+      return result;
+    }
+
+    function getTranslationText(idx) {
+      // базовый вариант: по индексу
+      return translations[idx]?.text ?? "";
     }
 
     function initPuzzleByIndex(idx) {
@@ -744,6 +820,18 @@
         snippetMode = false;
       };
 
+      reader.readAsText(file);
+    };
+
+    $("srtFileTr").onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        translations = parseSRTPlain(event.target.result);
+        alert(`Загружено переводов: ${translations.length}`);
+      };
       reader.readAsText(file);
     };
 

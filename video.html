@@ -389,27 +389,43 @@
 
       const li = document.createElement("li");
       li.className = status === "skipped" ? "skipped" : "done";
+      li.dataset.idx = String(idx); // <-- ВАЖНО
 
       const wrap = document.createElement("div");
       wrap.className = "line-wrap";
 
       const srcSpan = document.createElement("div");
       srcSpan.textContent = s.text;
-
       wrap.appendChild(srcSpan);
 
-      // если перевод загружен и есть строка — показываем
-      if (tr) {
-        const trSpan = document.createElement("div");
-        trSpan.className = "tr";
-        trSpan.textContent = tr;
-        wrap.appendChild(trSpan);
-      }
+      const trSpan = document.createElement("div");
+      trSpan.className = "tr";
+      trSpan.textContent = tr || "";
+      trSpan.style.display = tr ? "block" : "none"; // если нет перевода — скрываем
+      wrap.appendChild(trSpan);
 
       li.appendChild(wrap);
       log.appendChild(li);
 
       log.scrollTop = log.scrollHeight;
+    }
+
+    function applyTranslationsToExistingLog() {
+      const log = $("subs-log");
+      if (!log) return;
+
+      log.querySelectorAll("li[data-idx]").forEach(li => {
+        const idx = Number(li.dataset.idx);
+        const tr = getTranslationText(idx);
+        const trEl = li.querySelector(".tr");
+
+        if (!trEl) return;
+
+        if (tr) {
+          trEl.textContent = tr;
+          trEl.style.display = "block";
+        }
+      });
     }
 
 
@@ -830,6 +846,8 @@
       reader.onload = (event) => {
         translations = parseSRTPlain(event.target.result);
         alert(`Загружено переводов: ${translations.length}`);
+
+        applyTranslationsToExistingLog();
       };
       reader.readAsText(file);
     };

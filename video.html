@@ -173,6 +173,116 @@
       flex: 0 0 auto;
       height: 40px;
     }
+
+    /* ===== Двухколоночная раскладка ===== */
+    .lesson-layout {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    /* слева фиксируем “сцену” под 640 */
+    .left-stage {
+      flex: 0 0 auto;
+    }
+
+    /* прижимаем видео влево (раньше было margin: 0 auto) */
+    .player-container {
+      margin: 0;
+      /* было 0 auto */
+    }
+
+    /* справа панель субтитров */
+    .subs-panel {
+      flex: 1 1 320px;
+      min-width: 280px;
+      max-width: 520px;
+
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 12px;
+      padding: 12px;
+      box-sizing: border-box;
+      background: rgba(0, 0, 0, 0.03);
+
+      /* удобно: чтобы панель оставалась на экране при скролле */
+      position: sticky;
+      top: 12px;
+    }
+
+    .subs-panel-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .subs-title {
+      font-weight: 700;
+      color: #222;
+    }
+
+    .current-line-wrap {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .current-line {
+      font-size: 1.05em;
+      line-height: 1.35;
+      color: #111;
+      word-break: break-word;
+    }
+
+    .subs-log {
+      margin: 0;
+      padding-left: 18px;
+      max-height: 520px;
+      overflow: auto;
+    }
+
+    .subs-log li {
+      padding: 8px 10px;
+      margin: 0 0 8px 0;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      line-height: 1.35;
+    }
+
+    /* статусы прохождения */
+    .subs-log li.done::before {
+      content: "✅ ";
+    }
+
+    .subs-log li.skipped::before {
+      content: "⏭ ";
+      opacity: 0.9;
+    }
+
+    .subs-log li .meta {
+      display: block;
+      margin-top: 4px;
+      font-size: 0.82em;
+      opacity: 0.75;
+    }
+
+    /* на узких экранах — в столбик */
+    @media (max-width: 980px) {
+      .lesson-layout {
+        flex-direction: column;
+      }
+
+      .subs-panel {
+        position: static;
+        max-width: none;
+        width: 100%;
+      }
+    }
   </style>
 </head>
 
@@ -196,31 +306,53 @@
     </section>
 
     <section class="card">
-      <div class="player-container">
-        <div id="player" class="player-wrap"></div>
-        <div id="dim-overlay"></div>
-        <div id="puzzle-overlay"></div>
-      </div>
+      <div class="lesson-layout">
+        <!-- ЛЕВО: видео + паззл -->
+        <div class="left-stage">
+          <div class="player-container">
+            <div id="player" class="player-wrap"></div>
+            <div id="dim-overlay"></div>
+            <div id="puzzle-overlay"></div>
+          </div>
 
-      <div id="puzzle-under" class="puzzle-under" style="display:none;">
-        <div class="puzzle-controls">
-          <div class="left-controls">
-            <button id="listen-btn" class="btn">Слушать фразу</button>
-            <button id="listen-1s-btn" class="btn secondary">Повторить -1 сек.</button>
-            <button id="skip-btn" class="btn secondary">Пропустить</button>
+          <div id="puzzle-under" class="puzzle-under" style="display:none;">
+            <div class="puzzle-controls">
+              <div class="left-controls">
+                <button id="listen-btn" class="btn">Слушать фразу</button>
+                <button id="listen-1s-btn" class="btn secondary">Повторить -1 сек.</button>
+                <button id="skip-btn" class="btn secondary">Пропустить</button>
+              </div>
+              <div class="right-controls">
+                <div id="feedback" class="status"></div>
+              </div>
+            </div>
+
+            <div id="result-area" class="result-area"></div>
+            <div id="words-pool" class="words-container"></div>
           </div>
-          <div class="right-controls">
-            <div id="feedback" class="status"></div>
-          </div>
+
+          <p class="muted small">
+            Загрузите видео и SRT файл. Видео остановится в конце каждой фразы, затем появятся слова для сборки.
+          </p>
         </div>
 
-        <div id="result-area" class="result-area"></div>
-        <div id="words-pool" class="words-container"></div>
-      </div>
+        <aside class="subs-panel" aria-label="Оригинальные строки субтитров">
+          <div class="subs-panel-head">
+            <div class="subs-title">Оригинальные строки</div>
+            <div class="subs-hint muted small">Добавляются по мере прохождения</div>
+          </div>
 
-      <p class="muted small">
-        Загрузите видео и SRT файл. Видео остановится в конце каждой фразы, затем появятся слова для сборки.
-      </p>
+          <div class="current-line-wrap">
+            <div class="muted small" style="margin-bottom:6px;">Текущая:</div>
+            <div id="current-line" class="current-line">—</div>
+          </div>
+
+          <div class="passed-wrap">
+            <div class="muted small" style="margin:12px 0 6px;">Пройдено:</div>
+            <ol id="subs-log" class="subs-log"></ol>
+          </div>
+        </aside>
+      </div>
     </section>
   </main>
 
@@ -249,6 +381,68 @@
     let snippetIdx = null;
 
     let videoLoaded = false;
+
+    // панель субтитров справа
+    let loggedSolved = new Set(); // чтобы не добавлять одно и то же дважды
+
+    function resetSubsPanel() {
+      loggedSolved = new Set();
+      const log = $("subs-log");
+      if (log) log.innerHTML = "";
+      const cur = $("current-line");
+      if (cur) cur.textContent = "—";
+    }
+
+    function formatTime(sec) {
+      const s = Math.max(0, sec);
+      const mm = Math.floor(s / 60);
+      const ss = Math.floor(s % 60);
+      return `${mm}:${String(ss).padStart(2, "0")}`;
+    }
+
+    function setCurrentLine(idx) {
+      const el = $("current-line");
+      if (!el) return;
+      if (idx == null || !subtitles[idx]) {
+        el.textContent = "—";
+        return;
+      }
+      el.textContent = subtitles[idx].text;
+    }
+
+    function addSolvedLineToLog(idx, status /* 'done' | 'skipped' */) {
+      if (idx == null || !subtitles[idx]) return;
+
+      // не дублируем
+      if (loggedSolved.has(idx)) return;
+      loggedSolved.add(idx);
+
+      const log = $("subs-log");
+      if (!log) return;
+
+      const s = subtitles[idx];
+
+      const li = document.createElement("li");
+      li.className = status === "skipped" ? "skipped" : "done";
+
+      // текст (через textContent, чтобы не было проблем с HTML)
+      const textSpan = document.createElement("span");
+      textSpan.textContent = s.text;
+
+      // маленькая мета-инфа по времени (по желанию — можно убрать)
+      const meta = document.createElement("span");
+      meta.className = "meta";
+      meta.textContent = `${formatTime(s.start)} → ${formatTime(s.end)}`;
+
+      li.appendChild(textSpan);
+      li.appendChild(meta);
+
+      log.appendChild(li);
+
+      // автоскролл вниз, чтобы всегда было видно последнее добавленное
+      log.scrollTop = log.scrollHeight;
+    }
+
 
     function setPuzzlePanel(show) {
       $("puzzle-under").style.display = show ? "block" : "none";
@@ -332,6 +526,7 @@
 
       activePuzzleIdx = idx;
       const s = subtitles[idx];
+      setCurrentLine(idx);
       ytPlayer?.seekTo?.(Math.max(0, s.start), true);
       ytPlayer?.pauseVideo?.();
       const tokens = subtitles[idx].tokens ?? subtitles[idx].text.split(/\s+/).filter(Boolean);
@@ -458,12 +653,10 @@
         setTimeout(() => {
           const idx = activePuzzleIdx;
           if (idx == null) return;
-
           subtitles[idx].solved = true;
           nextIdx = Math.max(nextIdx, idx + 1);
-
+          addSolvedLineToLog(idx, "done");
           activePuzzleIdx = null;
-
           openNextPuzzle({ autoplay: true });
         }, 450);
 
@@ -575,6 +768,7 @@
       activePuzzleIdx = null;
       snippetMode = false;
 
+      resetSubsPanel();
       // ВАЖНО: грузим строго с 0 секунды
       ytPlayer.cueVideoById({
         videoId: id,
@@ -599,6 +793,8 @@
       reader.onload = (event) => {
         subtitles = parseSRT(event.target.result);
 
+        resetSubsPanel();
+        
         setTimeout(() => {
           maybeStartFirstPuzzle();
         }, 0);
@@ -631,7 +827,7 @@
 
       subtitles[idx].solved = true;
       nextIdx = Math.max(nextIdx, idx + 1);
-
+      addSolvedLineToLog(idx, "skipped");
       activePuzzleIdx = null;
       openNextPuzzle({ autoplay: true });
     };

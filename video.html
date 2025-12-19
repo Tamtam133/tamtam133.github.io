@@ -297,6 +297,36 @@
     .cc-toggle input {
       transform: translateY(1px);
     }
+
+    .text-mask {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      display: none;
+      z-index: 8;
+      pointer-events: none;
+      background: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(2px);
+    }
+
+    .text-mask.top {
+      top: 0;
+      bottom: auto;
+    }
+
+    .text-mask.bottom {
+      bottom: 0;
+      top: auto;
+    }
+
+    #click-shield {
+      position: absolute;
+      inset: 0;
+      z-index: 7;
+      display: none;
+      pointer-events: auto;
+      background: transparent;
+    }
   </style>
 </head>
 
@@ -316,6 +346,19 @@
           <input id="yt-cc-off" type="checkbox" checked />
           Скрывать встроенные субтитры YouTube
         </label>
+        <label class="cc-toggle">
+          <input id="mask-on" type="checkbox" />
+          Перекрывать текст на видео
+        </label>
+
+        <select id="mask-pos" class="loader-file" style="height:40px;">
+          <option value="top" selected>Сверху</option>
+          <option value="bottom">Снизу</option>
+        </select>
+
+        <input id="mask-h" class="loader-file" type="range" min="30" max="180" value="95" />
+        <input id="mask-op" class="loader-file" type="range" min="30" max="95" value="78" />
+
         <input id="srtFile" class="loader-file" type="file" accept=".srt" />
         <input id="srtFileTr" class="loader-file" type="file" accept=".srt" />
       </div>
@@ -328,7 +371,9 @@
         <!-- ЛЕВО: видео + паззл -->
         <div class="left-stage">
           <div class="player-container">
+            <div id="click-shield"></div>
             <div id="player" class="player-wrap"></div>
+            <div id="text-mask" class="text-mask"></div>
             <div id="dim-overlay"></div>
             <div id="puzzle-overlay"></div>
           </div>
@@ -392,6 +437,48 @@
     let loggedSolved = new Set(); // чтобы не добавлять одно и то же дважды
 
     let preferHideYTCC = true;
+
+    let maskEnabled = false;
+    let maskPos = "top";
+    let maskHeight = 95;
+    let maskOpacity = 0.78;
+
+    function readMaskControls() {
+      maskEnabled = !!$("mask-on")?.checked;
+      maskPos = $("mask-pos")?.value || "top";
+      maskHeight = Number($("mask-h")?.value || 95);
+      maskOpacity = Number($("mask-op")?.value || 78) / 100;
+    }
+
+    function applyTextMaskStyles() {
+      const el = $("text-mask");
+      if (!el) return;
+
+      readMaskControls();
+
+      // классы позиции
+      el.classList.remove("top", "bottom");
+      el.classList.add(maskPos === "bottom" ? "bottom" : "top");
+
+      // размер/прозрачность
+      el.style.height = maskHeight + "px";
+      el.style.background = `rgba(0,0,0,${maskOpacity})`;
+    }
+
+    function setTextMaskVisible(show) {
+      const el = $("text-mask");
+      if (!el) return;
+
+      readMaskControls();
+
+      if (!maskEnabled || !show) {
+        el.style.display = "none";
+        return;
+      }
+
+      applyTextMaskStyles();
+      el.style.display = "block";
+    }
 
     function readCcToggle() {
       const el = $("yt-cc-off");
@@ -483,6 +570,7 @@
     function setVideoDim(show) {
       $("dim-overlay").style.display = show ? "block" : "none";
       $("puzzle-overlay").style.display = show ? "block" : "none";
+      if (show) setTextMaskVisible(false);
     }
 
 
@@ -551,6 +639,12 @@
 
       alert(`Загружено фраз: ${result.length}`);
       return result;
+    }
+
+    function setClickShield(show) {
+      const el = $("click-shield");
+      if (!el) return;
+      el.style.display = show ? "block" : "none";
     }
 
     function parseSRTPlain(data) {
@@ -747,10 +841,16 @@
       snippetMode = true;
       snippetIdx = idx;
       snippetEnd = s.end;
+      
+      setClickShield(true);
 
       if (snippetResumePuzzle) {
         setVideoDim(false);
+        setTextMaskVisible(true);
+      } else {
+        setTextMaskVisible(true);
       }
+
 
       const start = Math.max(0, s.start + offsetSeconds);
       ytPlayer.seekTo(start, true);
@@ -777,13 +877,13 @@
       if (!subtitles.length) return;
 
       const t = ytPlayer.getCurrentTime();
+      setClickShield(false);
 
       if (snippetMode) {
         if (t >= snippetEnd - 0.05) {
           snippetMode = false;
           ytPlayer.pauseVideo();
-
-          // пазл не трогаем вообще
+          setTextMaskVisible(false);
           setVideoDim(true);
         }
       }
@@ -810,7 +910,12 @@
         width: "640",
         playerVars: {
           playsinline: 1,
-          origin: location.origin
+          origin: location.origin,
+          controls: 0,
+          rel: 0,
+          modestbranding: 1,
+          iv_load_policy: 3,
+          cc_load_policy: 0
         },
         events: {
           onReady: () => {
@@ -925,6 +1030,22 @@
     const tag = document.createElement("script");
     tag.src = "https://www.youtube.com/iframe_api";
     document.body.appendChild(tag);
+
+    document.addEventListener("DOMContentLoaded", () => {
+      ["mask-on", "mask-pos", "mask-h", "mask-op"].forEach(id => {
+        const el = $(id);
+        if (!el) return;
+        el.addEventListener("input", () => {
+          const dimVisible = $("dim-overlay")?.style.display === "block";
+          if (!dimVisible) setTextMaskVisible(true);
+        });
+        el.addEventListener("change", () => {
+          const dimVisible = $("dim-overlay")?.style.display === "block";
+          if (!dimVisible) setTextMaskVisible(true);
+        });
+      });
+    });
+
   </script>
 </body>
 

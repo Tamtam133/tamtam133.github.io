@@ -343,10 +343,6 @@
         <input id="vid" class="loader-input" type="text" placeholder="ID или URL видео (dQw4w9WgXcQ)" />
         <button id="load" class="btn">Загрузить</button>
         <label class="cc-toggle">
-          <input id="yt-cc-off" type="checkbox" checked />
-          Скрывать встроенные субтитры YouTube
-        </label>
-        <label class="cc-toggle">
           <input id="mask-on" type="checkbox" />
           Перекрывать текст на видео
         </label>
@@ -436,8 +432,6 @@
     // панель субтитров справа
     let loggedSolved = new Set(); // чтобы не добавлять одно и то же дважды
 
-    let preferHideYTCC = true;
-
     let maskEnabled = false;
     let maskPos = "top";
     let maskHeight = 95;
@@ -479,28 +473,6 @@
       applyTextMaskStyles();
       el.style.display = "block";
     }
-
-    function readCcToggle() {
-      const el = $("yt-cc-off");
-      preferHideYTCC = el ? !!el.checked : true;
-    }
-
-    function applyYouTubeCaptionsPreference() {
-      if (!ytPlayer) return;
-
-      readCcToggle();
-
-      // Если нужно скрывать субтитры — выключаем модуль captions
-      if (preferHideYTCC) {
-        try { ytPlayer.unloadModule("captions"); } catch (e) { }
-        // иногда помогает “закрепить” состояние
-        try { ytPlayer.unloadModule("cc"); } catch (e) { }
-      } else {
-        // если пользователь разрешил — можно загрузить модуль обратно
-        try { ytPlayer.loadModule("captions"); } catch (e) { }
-      }
-    }
-
 
     function resetSubsPanel() {
       loggedSolved = new Set();
@@ -570,7 +542,12 @@
     function setVideoDim(show) {
       $("dim-overlay").style.display = show ? "block" : "none";
       $("puzzle-overlay").style.display = show ? "block" : "none";
-      if (show) setTextMaskVisible(false);
+      if (show) {
+        setTextMaskVisible(false);
+        setClickShield(true);
+      } else {
+        if (!snippetMode) setClickShield(false);
+      }
     }
 
 
@@ -763,7 +740,6 @@
       initPuzzleByIndex(idx);
       if (autoplay) {
         setTimeout(() => {
-          applyYouTubeCaptionsPreference();
           playSnippet(idx, 0);
         }, 50);
       }
@@ -833,7 +809,6 @@
     function playSnippet(idx, offsetSeconds = 0) {
       if (!ytPlayer?.seekTo) return;
       if (idx == null || idx < 0 || idx >= subtitles.length) return;
-      applyYouTubeCaptionsPreference();
       snippetResumePuzzle = (activePuzzleIdx != null && activePuzzleIdx === idx);
 
       const s = subtitles[idx];
@@ -841,7 +816,7 @@
       snippetMode = true;
       snippetIdx = idx;
       snippetEnd = s.end;
-      
+
       setClickShield(true);
 
       if (snippetResumePuzzle) {
@@ -877,7 +852,6 @@
       if (!subtitles.length) return;
 
       const t = ytPlayer.getCurrentTime();
-      setClickShield(false);
 
       if (snippetMode) {
         if (t >= snippetEnd - 0.05) {
@@ -920,6 +894,8 @@
         events: {
           onReady: () => {
             playerReady = true;
+            try { ytPlayer.unloadModule("captions"); } catch (e) { }
+            try { ytPlayer.unloadModule("cc"); } catch (e) { }
             console.log("YouTube player is ready");
           },
           onStateChange: onStateChange
@@ -954,7 +930,6 @@
       videoLoaded = true;
 
       setTimeout(() => {
-        applyYouTubeCaptionsPreference();
         maybeStartFirstPuzzle({ autoplayFirst: true });
       }, 300);
     };

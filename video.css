@@ -95,7 +95,7 @@
 /* ===== Кнопки/статусы ===== */
 .btn {
     padding: 8px 12px;
-    background: #222;
+    background: #3B6D8D;
     border: 1px solid #444;
     color: #fff;
     cursor: pointer;
@@ -418,17 +418,19 @@
     cursor: pointer;
     font-size: 38px;
     line-height: 1;
-    color: rgba(0,0,0,0.22);
+    color: rgba(0,0,0,0.25);
     transform: translateY(-1px);
+    transition: color 0.15s ease, transform 0.15s ease;
 }
 
 .rate-star:hover{
-    transform: translateY(-2px) scale(1.03);
+    transform: translateY(-2px) scale(1.05);
+    color: #ffcc33;
 }
 
 .rate-star.filled{
-    color: rgba(0,0,0,0.85);
-    text-shadow: 0 1px 0 rgba(0,0,0,0.12);
+    color: #ffd966;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.25);
 }
 
 .rating-hint{
@@ -492,7 +494,9 @@
 
 .finish-overlay-inner{
     width: min(520px, 92vw);
-    background: rgba(255,255,255,0.92);
+    background: rgba(255,255,255,0.65);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border: 1px solid rgba(0,0,0,0.10);
     border-radius: var(--r-3);
     padding: 18px 18px 16px;

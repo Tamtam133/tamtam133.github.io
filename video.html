@@ -278,6 +278,25 @@
         width: 100%;
       }
     }
+
+    .cc-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.75);
+      font-size: 0.92em;
+      color: #333;
+      user-select: none;
+      height: 40px;
+      box-sizing: border-box;
+    }
+
+    .cc-toggle input {
+      transform: translateY(1px);
+    }
   </style>
 </head>
 
@@ -293,7 +312,10 @@
       <div class="loader-bar">
         <input id="vid" class="loader-input" type="text" placeholder="ID или URL видео (dQw4w9WgXcQ)" />
         <button id="load" class="btn">Загрузить</button>
-
+        <label class="cc-toggle">
+          <input id="yt-cc-off" type="checkbox" checked />
+          Скрывать встроенные субтитры YouTube
+        </label>
         <input id="srtFile" class="loader-file" type="file" accept=".srt" />
         <input id="srtFileTr" class="loader-file" type="file" accept=".srt" />
       </div>
@@ -368,6 +390,30 @@
 
     // панель субтитров справа
     let loggedSolved = new Set(); // чтобы не добавлять одно и то же дважды
+
+    let preferHideYTCC = true;
+
+    function readCcToggle() {
+      const el = $("yt-cc-off");
+      preferHideYTCC = el ? !!el.checked : true;
+    }
+
+    function applyYouTubeCaptionsPreference() {
+      if (!ytPlayer) return;
+
+      readCcToggle();
+
+      // Если нужно скрывать субтитры — выключаем модуль captions
+      if (preferHideYTCC) {
+        try { ytPlayer.unloadModule("captions"); } catch (e) { }
+        // иногда помогает “закрепить” состояние
+        try { ytPlayer.unloadModule("cc"); } catch (e) { }
+      } else {
+        // если пользователь разрешил — можно загрузить модуль обратно
+        try { ytPlayer.loadModule("captions"); } catch (e) { }
+      }
+    }
+
 
     function resetSubsPanel() {
       loggedSolved = new Set();
@@ -619,30 +665,25 @@
         $("feedback").innerHTML = '<span class="correct">Все фразы пройдены ✅</span>';
         return;
       }
-
       nextIdx = idx;
-
-      // открыли пазл (seek + pause + слова)
       initPuzzleByIndex(idx);
-
-      // если надо — сразу проигрываем отрывок
       if (autoplay) {
-        // небольшой таймаут, чтобы DOM успел обновиться и YouTube спокойно принял playVideo
         setTimeout(() => {
+          applyYouTubeCaptionsPreference();
           playSnippet(idx, 0);
         }, 50);
       }
+
     }
 
 
-    function maybeStartFirstPuzzle() {
+    function maybeStartFirstPuzzle({ autoplayFirst = false } = {}) {
       if (!playerReady) return;
       if (!videoLoaded) return;
       if (!subtitles.length) return;
 
-      // начинаем с первой не решённой
       nextIdx = 0;
-      openNextPuzzle();
+      openNextPuzzle({ autoplay: autoplayFirst });
     }
 
     function renderUserSentence() {
@@ -698,7 +739,7 @@
     function playSnippet(idx, offsetSeconds = 0) {
       if (!ytPlayer?.seekTo) return;
       if (idx == null || idx < 0 || idx >= subtitles.length) return;
-
+      applyYouTubeCaptionsPreference();
       snippetResumePuzzle = (activePuzzleIdx != null && activePuzzleIdx === idx);
 
       const s = subtitles[idx];
@@ -808,7 +849,8 @@
       videoLoaded = true;
 
       setTimeout(() => {
-        maybeStartFirstPuzzle();
+        applyYouTubeCaptionsPreference();
+        maybeStartFirstPuzzle({ autoplayFirst: true });
       }, 300);
     };
 
@@ -824,7 +866,7 @@
         resetSubsPanel();
 
         setTimeout(() => {
-          maybeStartFirstPuzzle();
+          maybeStartFirstPuzzle({ autoplayFirst: true });
         }, 0);
 
         // если видео уже играет / стоит не на нуле — подстроимся

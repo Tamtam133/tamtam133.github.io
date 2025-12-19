@@ -24,6 +24,10 @@ let snippetIdx = null;
 
 let videoLoaded = false;
 
+let currentVideoId = null;
+let ratingWasAsked = false;
+let ratingModalOpen = false;
+
 // панель субтитров справа
 let loggedSolved = new Set(); // чтобы не добавлять одно и то же дважды
 
@@ -259,6 +263,83 @@ function setClickShield(show) {
     el.style.display = show ? "block" : "none";
 }
 
+// --- rating modal helpers ---
+function setRatingModalVisible(show) {
+    const modal = $("rating-modal");
+    if (!modal) return;
+
+    modal.setAttribute("aria-hidden", show ? "false" : "true");
+    ratingModalOpen = !!show;
+
+    // блокируем прокрутку под модалкой
+    document.body.style.overflow = show ? "hidden" : "";
+}
+
+function paintStars(value) {
+    const stars = document.querySelectorAll("#rating-stars .rate-star");
+    stars.forEach(btn => {
+        const v = Number(btn.dataset.value || 0);
+        btn.classList.toggle("filled", v <= value);
+    });
+
+    const hint = $("rating-hint");
+    if (hint) {
+        hint.textContent = value ? `Твоя оценка: ${value}/5` : "Выбери от 1 до 5";
+    }
+}
+
+function saveVideoRating(value) {
+    // сохраняем в localStorage (не обязательно, но полезно для аналитики/прогресса)
+    try {
+        const key = "video_ratings";
+        const raw = localStorage.getItem(key);
+        const obj = raw ? JSON.parse(raw) : {};
+
+        const vid = currentVideoId || "unknown";
+        obj[vid] = {
+            rating: Number(value),
+            ts: Date.now(),
+            subtitlesCount: subtitles?.length ?? 0
+        };
+
+        localStorage.setItem(key, JSON.stringify(obj));
+    } catch (e) {
+        // если localStorage недоступен — просто молча игнорируем
+        console.warn("Cannot save rating:", e);
+    }
+}
+
+function showRatingModal() {
+    if (ratingWasAsked) return;
+
+    ratingWasAsked = true;
+    paintStars(0);
+
+    ytPlayer?.pauseVideo?.();
+
+    setRatingModalVisible(true);
+    setClickShield(true);
+
+    // фокус на первую звёздочку
+    setTimeout(() => {
+        document.querySelector("#rating-stars .rate-star")?.focus?.();
+    }, 0);
+}
+
+function closeRatingModalWithRating(value) {
+    saveVideoRating(value);
+    setRatingModalVisible(false);
+
+    // после оценки можно снова дать клики по плееру
+    setClickShield(false);
+
+    const fb = $("feedback");
+    if (fb) {
+        fb.innerHTML = `<span class="correct">Спасибо! Оценка: ${value}/5 ⭐</span>`;
+    }
+}
+
+
 function parseSRTPlain(data) {
     data = data
         .replace(/^\uFEFF/, '')
@@ -368,9 +449,13 @@ function openNextPuzzle({ autoplay = false } = {}) {
         activePuzzleIdx = null;
         setPuzzlePanel(false);
         setVideoDim(false);
+
+        showRatingModal();
+
         $("feedback").innerHTML = '<span class="correct">Все фразы пройдены ✅</span>';
         return;
     }
+
     nextIdx = idx;
     initPuzzleByIndex(idx);
     if (autoplay) {
@@ -468,31 +553,31 @@ function playSnippet(idx, offsetSeconds = 0) {
 }
 
 function scrollToCardCenter(fromEl, { smooth = true, extraOffset = 0 } = {}) {
-  if (!fromEl) return;
+    if (!fromEl) return;
 
-  const card = fromEl.closest(".card") || fromEl;
+    const card = fromEl.closest(".card") || fromEl;
 
-  const rect = card.getBoundingClientRect();
+    const rect = card.getBoundingClientRect();
 
-  const header = document.querySelector(".site-header");
-  const headerH = header ? header.getBoundingClientRect().height : 0;
+    const header = document.querySelector(".site-header");
+    const headerH = header ? header.getBoundingClientRect().height : 0;
 
-  const cardCenterY = window.scrollY + rect.top + rect.height / 2;
-  const viewportCenterY = window.innerHeight / 2;
+    const cardCenterY = window.scrollY + rect.top + rect.height / 2;
+    const viewportCenterY = window.innerHeight / 2;
 
-  let targetY = cardCenterY - viewportCenterY - headerH / 2 + extraOffset;
-  const maxY = document.documentElement.scrollHeight - window.innerHeight;
-  targetY = Math.max(0, Math.min(maxY, targetY));
+    let targetY = cardCenterY - viewportCenterY - headerH / 2 + extraOffset;
+    const maxY = document.documentElement.scrollHeight - window.innerHeight;
+    targetY = Math.max(0, Math.min(maxY, targetY));
 
-  window.scrollTo({ top: targetY, behavior: smooth ? "smooth" : "auto" });
+    window.scrollTo({ top: targetY, behavior: smooth ? "smooth" : "auto" });
 }
 
 function scrollToPuzzle() {
-  scrollToCardCenter($("puzzle-under"));
+    scrollToCardCenter($("puzzle-under"));
 }
 
 function scrollToPlayer() {
-  scrollToCardCenter($("player"));
+    scrollToCardCenter($("player"));
 }
 
 function tick() {
@@ -561,6 +646,10 @@ $("load").onclick = () => {
 
     if (!id) return;
 
+    currentVideoId = id;
+    ratingWasAsked = false;
+    setRatingModalVisible(false);
+
     // сброс прогресса
     nextIdx = 0;
     activePuzzleIdx = null;
@@ -590,7 +679,8 @@ $("srtFile").onchange = (e) => {
     const reader = new FileReader();
     reader.onload = (event) => {
         subtitles = parseSRT(event.target.result);
-
+        ratingWasAsked = false;
+        setRatingModalVisible(false);
         resetSubsPanel();
 
         setTimeout(() => {
@@ -666,5 +756,46 @@ document.addEventListener("DOMContentLoaded", () => {
             const dimVisible = $("dim-overlay")?.style.display === "block";
             if (!dimVisible) setTextMaskVisible(true);
         });
+    });
+
+    const modal = $("rating-modal");
+    const starsWrap = $("rating-stars");
+
+    if (modal) {
+        modal.addEventListener("click", (e) => {
+            if (ratingModalOpen) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+    }
+
+    if (starsWrap) {
+        starsWrap.addEventListener("mousemove", (e) => {
+            if (!ratingModalOpen) return;
+            const btn = e.target.closest(".rate-star");
+            if (!btn) return;
+            paintStars(Number(btn.dataset.value || 0));
+        });
+
+        starsWrap.addEventListener("mouseleave", () => {
+            if (!ratingModalOpen) return;
+            paintStars(0);
+        });
+
+        starsWrap.querySelectorAll(".rate-star").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const v = Number(btn.dataset.value || 0);
+                if (!v) return;
+                closeRatingModalWithRating(v);
+            });
+        });
+    }
+    document.addEventListener("keydown", (e) => {
+        if (!ratingModalOpen) return;
+        if (e.key === "Escape") {
+            e.preventDefault();
+            e.stopPropagation();
+        }
     });
 });

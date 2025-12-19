@@ -235,7 +235,7 @@
     position: sticky;
     top: 12px;
 
-    height: 620px;
+    height: 624px;
     overflow: auto;
 
     scrollbar-width: none;
@@ -357,4 +357,81 @@
 .text-mask.bottom {
     bottom: 0;
     top: auto;
+}
+
+/* ===== Модалка-оценка (после последнего пазла) ===== */
+.rating-modal{
+    position: fixed;
+    inset: 0;
+    display: none;
+    z-index: 1000;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(2px);
+    pointer-events: auto;
+}
+
+.rating-modal[aria-hidden="false"]{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    box-sizing: border-box;
+}
+
+.rating-card{
+    width: min(520px, 92vw);
+    background: #fff;
+    border-radius: var(--r-3);
+    padding: 18px 18px 16px;
+    box-sizing: border-box;
+    box-shadow: 0 12px 38px rgba(0,0,0,0.25);
+    border: 1px solid rgba(0,0,0,0.10);
+}
+
+.rating-title{
+    font-size: 1.18em;
+    font-weight: 800;
+    margin: 0 0 6px;
+    color: #111;
+}
+
+.rating-sub{
+    font-size: 0.98em;
+    line-height: 1.35;
+    color: rgba(0,0,0,0.70);
+    margin-bottom: 14px;
+}
+
+.rating-stars{
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 0 4px;
+}
+
+.rate-star{
+    appearance: none;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: 38px;
+    line-height: 1;
+    color: rgba(0,0,0,0.22);
+    transform: translateY(-1px);
+}
+
+.rate-star:hover{
+    transform: translateY(-2px) scale(1.03);
+}
+
+.rate-star.filled{
+    color: rgba(0,0,0,0.85);
+    text-shadow: 0 1px 0 rgba(0,0,0,0.12);
+}
+
+.rating-hint{
+    text-align: center;
+    margin-top: 6px;
 }

@@ -134,6 +134,24 @@
 
   <!-- Весь JS отдельно -->
   <script src="video.js" defer></script>
-</body>
 
+  <!-- Оценка полезности видео (показывается после последнего пазла) -->
+  <div id="rating-modal" class="rating-modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="rating-card" role="document" aria-label="Оценка полезности видео">
+      <div class="rating-title">Оцени полезность видео</div>
+      <div class="rating-sub">Насколько это видео было полезно для твоего текущего уровня владения языком?</div>
+
+      <div class="rating-stars" id="rating-stars" aria-label="Оценка в звёздах">
+        <button type="button" class="rate-star" data-value="1" aria-label="1 из 5">★</button>
+        <button type="button" class="rate-star" data-value="2" aria-label="2 из 5">★</button>
+        <button type="button" class="rate-star" data-value="3" aria-label="3 из 5">★</button>
+        <button type="button" class="rate-star" data-value="4" aria-label="4 из 5">★</button>
+        <button type="button" class="rate-star" data-value="5" aria-label="5 из 5">★</button>
+      </div>
+
+      <div class="rating-hint muted small" id="rating-hint">Выбери от 1 до 5</div>
+    </div>
+  </div>
+
+</body>
 </html>

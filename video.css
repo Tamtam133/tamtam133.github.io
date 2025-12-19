@@ -40,6 +40,7 @@
     position: absolute;
     inset: 0;
     background: rgba(0, 0, 0, 0.94);
+    border-radius: var(--r-3);
     display: none;
     z-index: 9;
     pointer-events: none;
@@ -234,7 +235,7 @@
     position: sticky;
     top: 12px;
 
-    height: 630px;
+    height: 620px;
     overflow: auto;
 
     scrollbar-width: none;

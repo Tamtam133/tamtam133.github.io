@@ -230,7 +230,7 @@ a {
 .card {
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 16px;
+  padding: 22px;
   margin: 16px 0;
   background: var(--card);
 }

@@ -40,7 +40,7 @@
 
     .puzzle-under {
       width: 640px;
-      margin: 12px auto 0;
+      margin: 12px 0 0;
       background: rgba(0, 0, 0, 0.04);
       border: 1px solid rgba(0, 0, 0, 0.08);
       border-radius: 10px;
@@ -194,9 +194,10 @@
 
     /* справа панель субтитров */
     .subs-panel {
-      flex: 1 1 320px;
-      min-width: 280px;
-      max-width: 520px;
+      flex: 0 0 420px;
+      width: 420px;
+      min-width: 420px;
+      max-width: 420px;
 
       border: 1px solid rgba(0, 0, 0, 0.08);
       border-radius: 12px;
@@ -204,22 +205,32 @@
       box-sizing: border-box;
       background: rgba(0, 0, 0, 0.03);
 
-      /* удобно: чтобы панель оставалась на экране при скролле */
       position: sticky;
       top: 12px;
+
+      height: 420px;
+      overflow: auto;
+
+      scrollbar-width: none;
+      -ms-overflow-style: none;
     }
 
     .subs-log {
       list-style: none;
-      /* убираем маркеры/цифры */
       margin: 0;
       padding: 0;
 
-      max-height: 520px;
-      overflow: auto;
+      max-height: none;
+      overflow: visible;
+
       display: flex;
       flex-direction: column;
       gap: 8px;
+    }
+
+    .subs-panel::-webkit-scrollbar {
+      width: 0;
+      height: 0;
     }
 
     .subs-log li {
@@ -274,8 +285,11 @@
 
       .subs-panel {
         position: static;
-        max-width: none;
         width: 100%;
+        min-width: 0;
+        max-width: none;
+        height: auto;
+        max-height: 520px;
       }
     }
 
@@ -354,6 +368,8 @@
 
         <input id="mask-h" class="loader-file" type="range" min="30" max="180" value="95" />
         <input id="mask-op" class="loader-file" type="range" min="30" max="95" value="78" />
+        <input id="mask-gap" class="loader-file" type="range" min="0" max="140" value="0"
+          title="Отступ маски от края (px)" />
 
         <input id="srtFile" class="loader-file" type="file" accept=".srt" />
         <input id="srtFileTr" class="loader-file" type="file" accept=".srt" />
@@ -389,10 +405,6 @@
             <div id="result-area" class="result-area"></div>
             <div id="words-pool" class="words-container"></div>
           </div>
-
-          <p class="muted small">
-            Загрузите видео и SRT файл. Видео остановится в конце каждой фразы, затем появятся слова для сборки.
-          </p>
         </div>
 
         <aside class="subs-panel" aria-label="Пройденно">
@@ -436,10 +448,12 @@
     let maskPos = "top";
     let maskHeight = 95;
     let maskOpacity = 0.78;
+    let maskGap = 0;
 
     function readMaskControls() {
       maskEnabled = !!$("mask-on")?.checked;
       maskPos = $("mask-pos")?.value || "top";
+      maskGap = Number($("mask-gap")?.value || 0);
       maskHeight = Number($("mask-h")?.value || 95);
       maskOpacity = Number($("mask-op")?.value || 78) / 100;
     }
@@ -457,6 +471,15 @@
       // размер/прозрачность
       el.style.height = maskHeight + "px";
       el.style.background = `rgba(0,0,0,${maskOpacity})`;
+
+      el.style.top = "";
+      el.style.bottom = "";
+
+      if (maskPos === "bottom") {
+        el.style.bottom = maskGap + "px";
+      } else {
+        el.style.top = maskGap + "px";
+      }
     }
 
     function setTextMaskVisible(show) {
@@ -1007,7 +1030,7 @@
     document.body.appendChild(tag);
 
     document.addEventListener("DOMContentLoaded", () => {
-      ["mask-on", "mask-pos", "mask-h", "mask-op"].forEach(id => {
+      ["mask-on", "mask-pos", "mask-gap", "mask-h", "mask-op"].forEach(id => {
         const el = $(id);
         if (!el) return;
         el.addEventListener("input", () => {

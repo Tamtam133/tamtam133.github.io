@@ -208,7 +208,7 @@
       position: sticky;
       top: 12px;
 
-      height: 420px;
+      height: 520px;
       overflow: auto;
 
       scrollbar-width: none;
@@ -506,6 +506,29 @@
       if (panel) panel.scrollTop = 0;
     }
 
+    function scrollSubsPanelToBottom({ smooth = true } = {}) {
+      const log = $("subs-log");
+      const panel = log ? log.closest(".subs-panel") : null;
+      if (!panel) return;
+
+      const doScroll = () => {
+        const top = panel.scrollHeight;
+        if (smooth && panel.scrollTo) {
+          panel.scrollTo({ top, behavior: "smooth" });
+        } else {
+          panel.scrollTop = top;
+        }
+      };
+
+      doScroll();
+      requestAnimationFrame(() => {
+        doScroll();
+        requestAnimationFrame(doScroll);
+      });
+      setTimeout(doScroll, 50);
+    }
+
+
     function addSolvedLineToLog(idx, status /* 'done' | 'skipped' */) {
       if (idx == null || !subtitles[idx]) return;
       if (loggedSolved.has(idx)) return;
@@ -536,9 +559,8 @@
 
       li.appendChild(wrap);
       log.appendChild(li);
-
-      const panel = log.closest(".subs-panel");
-      if (panel) requestAnimationFrame(() => panel.scrollTop = panel.scrollHeight);
+      
+      scrollSubsPanelToBottom({ smooth: true });
     }
 
     function applyTranslationsToExistingLog() {
@@ -602,10 +624,9 @@
     }
 
 
-    // максимально стабильный парсер SRT: split на блоки
     function parseSRT(data) {
       data = data
-        .replace(/^\uFEFF/, '')        // убираем BOM (частая причина "пропала первая фраза")
+        .replace(/^\uFEFF/, '')
         .replace(/\r\n/g, '\n')
         .replace(/\r/g, '\n')
         .trim();
@@ -617,7 +638,6 @@
         const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
         if (lines.length < 2) continue;
 
-        // иногда в блоке нет номера, поэтому ищем строку со стрелкой
         const timeLineIndex = lines.findIndex(l => l.includes('-->'));
         if (timeLineIndex === -1) continue;
 
@@ -631,11 +651,17 @@
         const end = timeToSeconds(m[2]);
 
         const textRaw = lines.slice(timeLineIndex + 1).join(' ');
+
+        const displayText = textRaw
+          .replace(/<[^>]*>/g, '')
+          .replace(/\u00A0/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+
         const tokens = tokenizeText(textRaw);
         if (!tokens.length) continue;
-        const clean = tokens.join(' ');
 
-        result.push({ start, end, text: clean, tokens, solved: false });
+        result.push({ start, end, text: displayText, tokens, solved: false });
       }
 
       result.sort((a, b) => a.start - b.start);

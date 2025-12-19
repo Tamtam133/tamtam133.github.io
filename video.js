@@ -467,19 +467,32 @@ function playSnippet(idx, offsetSeconds = 0) {
     ytPlayer.playVideo();
 }
 
-function scrollToEl(el) {
-    if (!el) return;
-    requestAnimationFrame(() => {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-    });
+function scrollToCardCenter(fromEl, { smooth = true, extraOffset = 0 } = {}) {
+  if (!fromEl) return;
+
+  const card = fromEl.closest(".card") || fromEl;
+
+  const rect = card.getBoundingClientRect();
+
+  const header = document.querySelector(".site-header");
+  const headerH = header ? header.getBoundingClientRect().height : 0;
+
+  const cardCenterY = window.scrollY + rect.top + rect.height / 2;
+  const viewportCenterY = window.innerHeight / 2;
+
+  let targetY = cardCenterY - viewportCenterY - headerH / 2 + extraOffset;
+  const maxY = document.documentElement.scrollHeight - window.innerHeight;
+  targetY = Math.max(0, Math.min(maxY, targetY));
+
+  window.scrollTo({ top: targetY, behavior: smooth ? "smooth" : "auto" });
 }
 
 function scrollToPuzzle() {
-    scrollToEl($("puzzle-under"));
+  scrollToCardCenter($("puzzle-under"));
 }
 
 function scrollToPlayer() {
-    scrollToEl($("player"));
+  scrollToCardCenter($("player"));
 }
 
 function tick() {

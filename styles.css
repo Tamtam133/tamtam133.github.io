@@ -232,14 +232,14 @@ a {
   border-radius: var(--radius);
   padding: 16px;
   margin: 16px 0;
-  background: var(--bg);
+  background: var(--card);
 }
 
 button {
   padding: 8px 12px;
   border-radius: 10px;
   border: 1px solid #ccc;
-  background: #fff;
+  background: var(--card);
   cursor: pointer;
 }
 

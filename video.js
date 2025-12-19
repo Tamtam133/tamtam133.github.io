@@ -28,6 +28,12 @@ let currentVideoId = null;
 let ratingWasAsked = false;
 let ratingModalOpen = false;
 
+
+// экран завершения + режим просмотра отрывка
+let finishScreenVisible = false;
+let segmentMode = false;
+let segmentStart = 0;
+let segmentEnd = 0;
 // панель субтитров справа
 let loggedSolved = new Set(); // чтобы не добавлять одно и то же дважды
 
@@ -330,8 +336,11 @@ function closeRatingModalWithRating(value) {
     saveVideoRating(value);
     setRatingModalVisible(false);
 
-    // после оценки можно снова дать клики по плееру
-    setClickShield(false);
+
+    setFinishScreenVisible(false);
+    segmentMode = false;
+    // показываем экран завершения (кнопки вместо паззла)
+    showFinishActions();
 
     const fb = $("feedback");
     if (fb) {
@@ -339,6 +348,107 @@ function closeRatingModalWithRating(value) {
     }
 }
 
+// ===== Экран завершения (кнопки вместо паззла) =====
+function setFinishScreenVisible(show) {
+    finishScreenVisible = !!show;
+
+    const finish = $("finish-actions");
+    const result = $("result-area");
+    const pool = $("words-pool");
+
+    const listenBtn = $("listen-btn");
+    const listen1Btn = $("listen-1s-btn");
+    const skipBtn = $("skip-btn");
+
+    if (finish) finish.style.display = show ? "block" : "none";
+    if (result) result.style.display = show ? "none" : "";
+    if (pool) pool.style.display = show ? "none" : "";
+
+    // кнопки управления паззлом — прячем
+    if (listenBtn) listenBtn.style.display = show ? "none" : "";
+    if (listen1Btn) listen1Btn.style.display = show ? "none" : "";
+    if (skipBtn) skipBtn.style.display = show ? "none" : "";
+}
+
+function showFinishActions() {
+    // останавливаем любые режимы проигрывания
+    snippetMode = false;
+    segmentMode = false;
+
+    activePuzzleIdx = null;
+
+    setPuzzlePanel(true);
+    setVideoDim(false);
+    setTextMaskVisible(false);
+    setClickShield(false);
+
+    setFinishScreenVisible(true);
+    scrollToPuzzle();
+}
+
+function resetAllPuzzlesAndStart() {
+    if (!subtitles.length) return;
+
+    // остановить просмотр/сниппеты
+    snippetMode = false;
+    segmentMode = false;
+    try { ytPlayer?.pauseVideo?.(); } catch (e) {}
+
+    // сброс solved
+    subtitles.forEach(s => s.solved = false);
+
+    // сброс логов
+    resetSubsPanel();
+
+    // сброс индексов
+    nextIdx = 0;
+    activePuzzleIdx = null;
+
+    // снова разрешим спросить оценку в конце (если хочешь — можешь убрать эту строку)
+    ratingWasAsked = false;
+
+    setFinishScreenVisible(false);
+
+    // старт первого паззла
+    openNextPuzzle({ autoplay: true });
+}
+
+function playSubtitlesSegment() {
+    if (!ytPlayer?.seekTo || !subtitles.length) return;
+
+    // старт — начало первого субтитра, конец — конец последнего
+    segmentStart = Math.max(0, subtitles[0].start || 0);
+    segmentEnd = Math.max(segmentStart, subtitles[subtitles.length - 1].end || segmentStart);
+
+    // выключаем паззл-режим
+    snippetMode = false;
+    activePuzzleIdx = null;
+
+    setVideoDim(false);
+    setClickShield(false);
+
+    // маску показываем только если включена галка
+    setTextMaskVisible(true);
+
+    segmentMode = true;
+
+    ytPlayer.seekTo(segmentStart, true);
+    ytPlayer.playVideo();
+
+    const fb = $("feedback");
+    if (fb) {
+        fb.innerHTML = `<span class="muted">Просмотр отрывка: ${formatTime(segmentStart)} – ${formatTime(segmentEnd)}</span>`;
+    }
+
+    scrollToPlayer();
+}
+
+function formatTime(sec) {
+    sec = Math.max(0, Number(sec || 0));
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m}:${String(s).padStart(2, "0")}`;
+}
 
 function parseSRTPlain(data) {
     data = data
@@ -450,6 +560,8 @@ function openNextPuzzle({ autoplay = false } = {}) {
         setPuzzlePanel(false);
         setVideoDim(false);
 
+
+        setFinishScreenVisible(false);
         showRatingModal();
 
         $("feedback").innerHTML = '<span class="correct">Все фразы пройдены ✅</span>';
@@ -594,6 +706,18 @@ function tick() {
             setVideoDim(true);
         }
     }
+
+    if (segmentMode) {
+        if (t >= segmentEnd - 0.05) {
+            segmentMode = false;
+            ytPlayer.pauseVideo();
+            // маску уберём (если нужна — пользователь включит)
+            setTextMaskVisible(false);
+
+            const fb = $("feedback");
+            if (fb) fb.innerHTML = `<span class="muted">Просмотр отрывка завершён ✅</span>`;
+        }
+    }
 }
 
 
@@ -649,6 +773,8 @@ $("load").onclick = () => {
     currentVideoId = id;
     ratingWasAsked = false;
     setRatingModalVisible(false);
+        setFinishScreenVisible(false);
+        segmentMode = false;
 
     // сброс прогресса
     nextIdx = 0;
@@ -681,6 +807,8 @@ $("srtFile").onchange = (e) => {
         subtitles = parseSRT(event.target.result);
         ratingWasAsked = false;
         setRatingModalVisible(false);
+        setFinishScreenVisible(false);
+        segmentMode = false;
         resetSubsPanel();
 
         setTimeout(() => {
@@ -798,4 +926,20 @@ document.addEventListener("DOMContentLoaded", () => {
             e.stopPropagation();
         }
     });
+
+    // ===== кнопки после завершения =====
+    const restartBtn = $("restart-btn");
+    if (restartBtn) {
+        restartBtn.addEventListener("click", () => {
+            resetAllPuzzlesAndStart();
+        });
+    }
+
+    const watchBtn = $("watch-segment-btn");
+    if (watchBtn) {
+        watchBtn.addEventListener("click", () => {
+            playSubtitlesSegment();
+        });
+    }
+
 });

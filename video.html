@@ -501,11 +501,13 @@
       loggedSolved = new Set();
       const log = $("subs-log");
       if (log) log.innerHTML = "";
+
+      const panel = log?.closest(".subs-panel");
+      if (panel) panel.scrollTop = 0;
     }
 
     function addSolvedLineToLog(idx, status /* 'done' | 'skipped' */) {
       if (idx == null || !subtitles[idx]) return;
-
       if (loggedSolved.has(idx)) return;
       loggedSolved.add(idx);
 
@@ -517,7 +519,7 @@
 
       const li = document.createElement("li");
       li.className = status === "skipped" ? "skipped" : "done";
-      li.dataset.idx = String(idx); // <-- ВАЖНО
+      li.dataset.idx = String(idx);
 
       const wrap = document.createElement("div");
       wrap.className = "line-wrap";
@@ -529,13 +531,14 @@
       const trSpan = document.createElement("div");
       trSpan.className = "tr";
       trSpan.textContent = tr || "";
-      trSpan.style.display = tr ? "block" : "none"; // если нет перевода — скрываем
+      trSpan.style.display = tr ? "block" : "none";
       wrap.appendChild(trSpan);
 
       li.appendChild(wrap);
       log.appendChild(li);
 
-      log.scrollTop = log.scrollHeight;
+      const panel = log.closest(".subs-panel");
+      if (panel) requestAnimationFrame(() => panel.scrollTop = panel.scrollHeight);
     }
 
     function applyTranslationsToExistingLog() {

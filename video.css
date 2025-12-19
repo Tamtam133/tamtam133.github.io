@@ -465,3 +465,40 @@
 .finish-hint{
     text-align: center;
 }
+
+
+/* ===== Оверлей на видео после завершения ===== */
+.finish-overlay{
+    position: absolute;
+    inset: 0;
+    display: none;
+    z-index: 30;
+    pointer-events: auto;
+    border-radius: var(--r-3);
+
+    background-image: url("images/video_back.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.finish-overlay[aria-hidden="false"]{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    box-sizing: border-box;
+}
+
+.finish-overlay-inner{
+    width: min(520px, 92vw);
+    background: rgba(255,255,255,0.92);
+    border: 1px solid rgba(0,0,0,0.10);
+    border-radius: var(--r-3);
+    padding: 18px 18px 16px;
+    box-shadow: 0 12px 38px rgba(0,0,0,0.25);
+    text-align: center;
+}
+
+.finish-overlay .finish-title{ margin-top: 0; }
+.finish-overlay .finish-sub{ margin-top: 0; }

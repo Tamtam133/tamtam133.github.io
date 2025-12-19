@@ -98,6 +98,23 @@
             <div id="text-mask" class="text-mask"></div>
             <div id="dim-overlay"></div>
             <div id="puzzle-overlay"></div>
+
+            <!-- Оверлей после завершения (появляется после оценки) -->
+            <div id="finish-overlay" class="finish-overlay" style="display:none;" aria-hidden="true">
+              <div class="finish-overlay-inner">
+                <div class="finish-title">Готово 🎉</div>
+                <div class="finish-sub muted">Что дальше?</div>
+
+                <div class="finish-buttons">
+                  <button id="restart-btn" class="btn">Пройти тренировку заново</button>
+                  <button id="watch-segment-btn" class="btn secondary">Смотреть отрывок</button>
+                </div>
+
+                <div class="muted small finish-hint">
+                  Отрывок будет проигран с момента начала <b>первой</b> фразы до конца <b>последней</b>.
+                </div>
+              </div>
+            </div>
           </div>
 
           <div id="puzzle-under" class="puzzle-under" style="display:none;">
@@ -116,21 +133,7 @@
             <div id="result-area" class="result-area"></div>
             <div id="words-pool" class="words-container"></div>
           
-            <!-- Экран после прохождения (появляется после оценки) -->
-            <div id="finish-actions" class="finish-actions" style="display:none;">
-              <div class="finish-title">Готово 🎉</div>
-              <div class="finish-sub muted">Что дальше?</div>
-
-              <div class="finish-buttons">
-                <button id="restart-btn" class="btn">Пройти пазлы заново</button>
-                <button id="watch-segment-btn" class="btn secondary">Смотреть только отрывок</button>
-              </div>
-
-              <div class="muted small finish-hint">
-                Отрывок будет проигран с момента начала <b>первого</b> субтитра до конца <b>последнего</b>.
-              </div>
             </div>
-</div>
         </div>
 
         <!-- ПРАВО: лог пройденного -->

@@ -29,8 +29,8 @@ let ratingWasAsked = false;
 let ratingModalOpen = false;
 
 
-// экран завершения + режим просмотра отрывка
-let finishScreenVisible = false;
+// оверлей завершения (поверх видео) + режим просмотра отрывка
+let finishOverlayVisible = false;
 let segmentMode = false;
 let segmentStart = 0;
 let segmentEnd = 0;
@@ -336,54 +336,50 @@ function closeRatingModalWithRating(value) {
     saveVideoRating(value);
     setRatingModalVisible(false);
 
+    // после оценки показываем оверлей на видео с кнопками (без лишних сообщений)
+    showFinishOverlay();
+}
 
-    setFinishScreenVisible(false);
-    segmentMode = false;
-    // показываем экран завершения (кнопки вместо паззла)
-    showFinishActions();
+// ===== Оверлей завершения (кнопки поверх видео) =====
+function setFinishOverlayVisible(show) {
+    finishOverlayVisible = !!show;
 
-    const fb = $("feedback");
-    if (fb) {
-        fb.innerHTML = `<span class="correct">Спасибо! Оценка: ${value}/5 ⭐</span>`;
+    const ov = $("finish-overlay");
+    if (!ov) return;
+
+    ov.style.display = show ? "flex" : "none";
+    ov.setAttribute("aria-hidden", show ? "false" : "true");
+
+    // блокируем клики по YouTube-плееру под оверлеем
+    if (show) {
+        setClickShield(true);
+    } else {
+        // если сейчас нет активного сниппета/отрезка и нет затемнения — можно снова разрешить клики
+        const dimVisible = $("dim-overlay")?.style.display === "block";
+        if (!snippetMode && !segmentMode && !dimVisible) {
+            setClickShield(false);
+        }
     }
 }
 
-// ===== Экран завершения (кнопки вместо паззла) =====
-function setFinishScreenVisible(show) {
-    finishScreenVisible = !!show;
+function showFinishOverlay() {
+    // стопаем проигрывание, прячем маски/затемнение, убираем паззл-панель
+    try { ytPlayer?.pauseVideo?.(); } catch (e) {}
 
-    const finish = $("finish-actions");
-    const result = $("result-area");
-    const pool = $("words-pool");
-
-    const listenBtn = $("listen-btn");
-    const listen1Btn = $("listen-1s-btn");
-    const skipBtn = $("skip-btn");
-
-    if (finish) finish.style.display = show ? "block" : "none";
-    if (result) result.style.display = show ? "none" : "";
-    if (pool) pool.style.display = show ? "none" : "";
-
-    // кнопки управления паззлом — прячем
-    if (listenBtn) listenBtn.style.display = show ? "none" : "";
-    if (listen1Btn) listen1Btn.style.display = show ? "none" : "";
-    if (skipBtn) skipBtn.style.display = show ? "none" : "";
-}
-
-function showFinishActions() {
-    // останавливаем любые режимы проигрывания
     snippetMode = false;
     segmentMode = false;
-
     activePuzzleIdx = null;
 
-    setPuzzlePanel(true);
-    setVideoDim(false);
     setTextMaskVisible(false);
-    setClickShield(false);
+    setVideoDim(false);
+    setPuzzlePanel(false);
 
-    setFinishScreenVisible(true);
-    scrollToPuzzle();
+    // очищаем любые тексты справа от кнопок (там, где "feedback")
+    const fb = $("feedback");
+    if (fb) fb.textContent = "";
+
+    setFinishOverlayVisible(true);
+    scrollToPlayer();
 }
 
 function resetAllPuzzlesAndStart() {
@@ -407,7 +403,7 @@ function resetAllPuzzlesAndStart() {
     // снова разрешим спросить оценку в конце (если хочешь — можешь убрать эту строку)
     ratingWasAsked = false;
 
-    setFinishScreenVisible(false);
+    setFinishOverlayVisible(false);
 
     // старт первого паззла
     openNextPuzzle({ autoplay: true });
@@ -415,6 +411,11 @@ function resetAllPuzzlesAndStart() {
 
 function playSubtitlesSegment() {
     if (!ytPlayer?.seekTo || !subtitles.length) return;
+
+    // спрятать оверлей и убрать любые сообщения под видео
+    setFinishOverlayVisible(false);
+    const fb = $("feedback");
+    if (fb) fb.textContent = "";
 
     // старт — начало первого субтитра, конец — конец последнего
     segmentStart = Math.max(0, subtitles[0].start || 0);
@@ -434,11 +435,6 @@ function playSubtitlesSegment() {
 
     ytPlayer.seekTo(segmentStart, true);
     ytPlayer.playVideo();
-
-    const fb = $("feedback");
-    if (fb) {
-        fb.innerHTML = `<span class="muted">Просмотр отрывка: ${formatTime(segmentStart)} – ${formatTime(segmentEnd)}</span>`;
-    }
 
     scrollToPlayer();
 }
@@ -561,11 +557,9 @@ function openNextPuzzle({ autoplay = false } = {}) {
         setVideoDim(false);
 
 
-        setFinishScreenVisible(false);
+        setFinishOverlayVisible(false);
         showRatingModal();
-
-        $("feedback").innerHTML = '<span class="correct">Все фразы пройдены ✅</span>';
-        return;
+return;
     }
 
     nextIdx = idx;
@@ -709,13 +703,12 @@ function tick() {
 
     if (segmentMode) {
         if (t >= segmentEnd - 0.05) {
+            // доиграли отрывок — ставим паузу и возвращаем оверлей с кнопками
             segmentMode = false;
             ytPlayer.pauseVideo();
-            // маску уберём (если нужна — пользователь включит)
             setTextMaskVisible(false);
 
-            const fb = $("feedback");
-            if (fb) fb.innerHTML = `<span class="muted">Просмотр отрывка завершён ✅</span>`;
+            showFinishOverlay();
         }
     }
 }
@@ -773,7 +766,7 @@ $("load").onclick = () => {
     currentVideoId = id;
     ratingWasAsked = false;
     setRatingModalVisible(false);
-        setFinishScreenVisible(false);
+        setFinishOverlayVisible(false);
         segmentMode = false;
 
     // сброс прогресса
@@ -807,7 +800,7 @@ $("srtFile").onchange = (e) => {
         subtitles = parseSRT(event.target.result);
         ratingWasAsked = false;
         setRatingModalVisible(false);
-        setFinishScreenVisible(false);
+        setFinishOverlayVisible(false);
         segmentMode = false;
         resetSubsPanel();
 

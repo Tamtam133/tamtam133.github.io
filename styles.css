@@ -232,7 +232,8 @@ a {
   border-radius: var(--radius);
   padding: 16px;
   margin: 16px 0;
-  background: var(--bg);
+  /*background: var(--bg);*/
+  background: #fff;
 }
 
 button {

@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="ru">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -13,12 +14,51 @@
 
 <body>
   <header class="site-header">
-    <div class="container">
-      <h1 class="site-title">Видео-паззл</h1>
+    <div class="container header-row">
+      <a class="brand" href="index.html">
+        <span class="brand-logo"></span>
+        <span class="brand-title">ОДИН ШАГ: КОРЕЙСКИЙ</span>
+      </a>
+
+      <div class="profile">
+        <button id="profileBtn" class="avatar" aria-haspopup="menu" aria-expanded="false" aria-controls="profileMenu">
+          <img id="avatarImg" class="avatar-img" src="images/profile_icon.png" alt="Аватар пользователя">
+        </button>
+
+        <div id="profileMenu" class="profile-menu" role="menu" aria-hidden="true">
+          <div class="profile-card" id="profileCard">
+            <div class="avatar avatar-sm">
+              <img id="avatarImgSm" class="avatar-img" src="images/profile_icon.png" alt="">
+            </div>
+            <div class="profile-meta">
+              <div class="profile-name" id="profileName">Гость</div>
+              <div class="profile-sub muted" id="profileSub">
+                <span class="icon-streak" id="streakValue">0 дн</span>
+                <span class="icon-limit" id="limitValue">10</span>
+              </div>
+            </div>
+          </div>
+
+          <div id="menuLinks">
+            <a href="index.html" role="menuitem">Текст</a>
+            <a href="flashcards.html" role="menuitem">Карточки</a>
+            <a href="video.html" role="menuitem">Видео</a>
+            <hr>
+          </div>
+
+          <button id="loginBtn" role="menuitem">Войти / Зарегистрироваться</button>
+          <button id="logoutBtn" role="menuitem" class="hidden">Выйти</button>
+
+          <hr>
+
+          <button id="fakeAuth" role="menuitem">Условия использования</button>
+        </div>
+      </div>
     </div>
   </header>
 
   <main class="container">
+    <h2 class="page-title">Видео</h2>
     <section class="card">
       <div class="loader-bar">
         <input id="vid" class="loader-input" type="text" placeholder="ID или URL видео (dQw4w9WgXcQ)" />
@@ -89,4 +129,5 @@
   <!-- Весь JS отдельно -->
   <script src="video.js" defer></script>
 </body>
+
 </html>

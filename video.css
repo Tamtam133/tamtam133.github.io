@@ -40,7 +40,7 @@
     position: absolute;
     inset: 1px;
     background: rgba(0, 0, 0, 0.94);
-    border-radius: var(--r-3);
+    border-radius: calc(var(--r-3) - 1px);
     display: none;
     z-index: 9;
     pointer-events: none;
@@ -49,7 +49,7 @@
 
 #puzzle-overlay {
     position: absolute;
-    inset: 0;
+    inset: 1px;
     display: none;
     z-index: 10;
     pointer-events: none;

@@ -342,6 +342,8 @@ function closeRatingModalWithRating(value) {
     // показываем экран завершения (кнопки вместо паззла)
     showFinishActions();
 
+    showFinishOverlay();
+
     if (fb) {
         fb.innerHTML = `<span class="correct">Спасибо! Оценка: ${value}/5 ⭐</span>`;
     }
@@ -386,12 +388,13 @@ function showFinishActions() {
 }
 
 function resetAllPuzzlesAndStart() {
+    hideFinishOverlay();
     if (!subtitles.length) return;
 
     // остановить просмотр/сниппеты
     snippetMode = false;
     segmentMode = false;
-    try { ytPlayer?.pauseVideo?.(); } catch (e) {}
+    try { ytPlayer?.pauseVideo?.(); } catch (e) { }
 
     // сброс solved
     subtitles.forEach(s => s.solved = false);
@@ -413,6 +416,8 @@ function resetAllPuzzlesAndStart() {
 }
 
 function playSubtitlesSegment() {
+    hideFinishOverlay();
+    setPuzzlePanel(false);
     if (!ytPlayer?.seekTo || !subtitles.length) return;
 
     // старт — начало первого субтитра, конец — конец последнего
@@ -702,10 +707,8 @@ function tick() {
         if (t >= segmentEnd - 0.05) {
             segmentMode = false;
             ytPlayer.pauseVideo();
-            // маску уберём (если нужна — пользователь включит)
             setTextMaskVisible(false);
-
-            if (fb) fb.innerHTML = `<span class="muted">Просмотр отрывка завершён ✅</span>`;
+            showFinishOverlay();
         }
     }
 }
@@ -724,6 +727,34 @@ function onStateChange(e) {
         }
     }
 }
+
+function setFinishOverlayVisible(show) {
+    const ov = $("finish-overlay");
+    if (!ov) return;
+    ov.setAttribute("aria-hidden", show ? "false" : "true");
+}
+
+function showFinishOverlay() {
+    try { ytPlayer?.pauseVideo?.(); } catch (e) { }
+
+    // на всякий случай выключаем всё, что может мешать
+    snippetMode = false;
+    segmentMode = false;
+
+    setVideoDim(false);
+    setTextMaskVisible(false);
+    setClickShield(false);
+
+    // пазл под видео можно скрыть, чтобы “экран завершения” был только на видео
+    setPuzzlePanel(false);
+
+    setFinishOverlayVisible(true);
+}
+
+function hideFinishOverlay() {
+    setFinishOverlayVisible(false);
+}
+
 
 window.onYouTubeIframeAPIReady = function () {
     ytPlayer = new YT.Player("player", {
@@ -752,7 +783,7 @@ window.onYouTubeIframeAPIReady = function () {
 
 $("load").onclick = () => {
     const id = extractId($("vid").value);
-
+    hideFinishOverlay();
     if (!playerReady) {
         alert("Плеер YouTube ещё не готов. Запускай страницу через localhost (Live Server), не через file://");
         return;
@@ -763,8 +794,8 @@ $("load").onclick = () => {
     currentVideoId = id;
     ratingWasAsked = false;
     setRatingModalVisible(false);
-        setFinishScreenVisible(false);
-        segmentMode = false;
+    setFinishScreenVisible(false);
+    segmentMode = false;
 
     // сброс прогресса
     nextIdx = 0;
@@ -789,6 +820,7 @@ $("load").onclick = () => {
 
 
 $("srtFile").onchange = (e) => {
+    hideFinishOverlay();
     const file = e.target.files[0];
     if (!file) return;
 

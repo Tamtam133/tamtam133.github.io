@@ -38,7 +38,7 @@
 
 #dim-overlay {
     position: absolute;
-    inset: 0;
+    inset: 1px;
     background: rgba(0, 0, 0, 0.94);
     border-radius: var(--r-3);
     display: none;

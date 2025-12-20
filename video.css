@@ -578,3 +578,12 @@
   border-top: 1px solid rgba(0,0,0,0.12);
   transform: rotate(45deg);
 }
+
+.help-tip a.help-link {
+  text-decoration: underline;
+  font-weight: 700;
+}
+
+.help-tip a.help-link:hover {
+  text-decoration: none;
+}

@@ -775,6 +775,8 @@ window.onYouTubeIframeAPIReady = function () {
 
 $("load").onclick = () => {
     const id = extractId($("vid").value);
+    updateDisclaimerLink();
+
     hideFinishOverlay();
     if (!playerReady) {
         alert("Плеер YouTube ещё не готов. Запускай страницу через localhost (Live Server), не через file://");
@@ -882,6 +884,47 @@ function extractId(url) {
     return m ? m[1] : url.trim();
 }
 
+function buildYoutubeHrefFromVidInput(raw) {
+    const s = (raw || "").trim();
+    if (!s) return null;
+
+    const looksLikeUrl = /^https?:\/\//i.test(s) || s.includes("youtu.be") || s.includes("youtube.com");
+    if (looksLikeUrl) {
+        try {
+            return new URL(s).toString();
+        } catch {
+            const id = extractId(s);
+            return id ? `https://www.youtube.com/watch?v=${encodeURIComponent(id)}` : null;
+        }
+    }
+
+    const id = extractId(s);
+    if (!id) return null;
+    return `https://www.youtube.com/watch?v=${encodeURIComponent(id)}`;
+}
+
+function updateDisclaimerLink() {
+    const a = document.getElementById("disclaimer-link");
+    const input = document.getElementById("vid");
+    if (!a || !input) return;
+
+    const href = buildYoutubeHrefFromVidInput(input.value);
+
+    if (!href) {
+        a.href = "#";
+        a.classList.add("is-disabled");
+        a.setAttribute("aria-disabled", "true");
+        a.removeAttribute("title");
+        return;
+    }
+
+    a.href = href;
+    a.classList.remove("is-disabled");
+    a.setAttribute("aria-disabled", "false");
+    a.title = href;
+}
+
+
 const tag = document.createElement("script");
 tag.src = "https://www.youtube.com/iframe_api";
 document.body.appendChild(tag);
@@ -933,6 +976,11 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
     }
+    updateDisclaimerLink();
+    document.getElementById("vid")?.addEventListener("input", updateDisclaimerLink);
+    document.getElementById("vid")?.addEventListener("change", updateDisclaimerLink);
+
+
     document.addEventListener("keydown", (e) => {
         if (!ratingModalOpen) return;
         if (e.key === "Escape") {

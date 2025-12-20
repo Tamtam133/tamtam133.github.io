@@ -89,58 +89,79 @@
     </section>
 
     <section class="card">
-      <div class="lesson-layout">
-        <!-- ЛЕВО: видео + паззл -->
-        <div class="left-stage">
-          <div class="player-container">
-            <div id="click-shield"></div>
-            <div id="player" class="player-wrap"></div>
-            <div id="text-mask" class="text-mask"></div>
-            <div id="dim-overlay"></div>
-            <div id="puzzle-overlay"></div>
-            <div id="finish-overlay" class="finish-overlay" aria-hidden="true">
-              <div class="finish-overlay-inner" id="finish-actions" style="display:none;">
+      <section class="card card-with-help">
+        <!-- дисклеймер-иконка в углу -->
+        <div class="card-help">
+          <button class="help-ic" type="button" aria-describedby="disclaimer-tip">
+            <!-- можно инлайн-SVG, чтобы не зависеть от пути к файлу -->
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path
+                d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z" />
+            </svg>
+            <span class="sr-only">Дисклеймер</span>
+          </button>
 
-                <div class="finish-title">🎉Готово🎉</div>
-                <div class="finish-sub muted">Что дальше?</div>
-
-                <div class="finish-buttons">
-                  <button id="restart-btn" class="btn">Пройти тренировку заново</button>
-                  <button id="watch-segment-btn" class="btn">Смотреть отрывок</button>
-                </div>
-
-                <div class="muted small finish-hint">
-                  Отрывок будет проигран с момента начала <b>первой</b> фразы до конца <b>последней</b>.
-                </div>
-
-              </div>
+          <div id="disclaimer-tip" class="help-tip" role="tooltip">
+            <div class="help-tip-title">Важно</div>
+            <div class="help-tip-text">
+              Тренажёр предназначен для обучения. Мы не связаны с YouTube.
+              Убедись, что у тебя есть право использовать загруженные субтитры/материалы.
             </div>
-          </div>
-
-          <div id="puzzle-under" class="puzzle-under" style="display:none;">
-            <div class="puzzle-controls">
-              <div class="left-controls">
-                <button id="listen-btn" class="btn">Повторить</button>
-                <button id="listen-1s-btn" class="btn">Повторить (+1 сек)</button>
-              </div>
-
-              <div class="right-controls">
-                <button id="skip-btn" class="btn secondary">Пропустить</button>
-
-              </div>
-            </div>
-
-            <div id="result-area" class="result-area"></div>
-            <div id="words-pool" class="words-container"></div>
-
           </div>
         </div>
+        <div class="lesson-layout">
+          <!-- ЛЕВО: видео + паззл -->
+          <div class="left-stage">
+            <div class="player-container">
+              <div id="click-shield"></div>
+              <div id="player" class="player-wrap"></div>
+              <div id="text-mask" class="text-mask"></div>
+              <div id="dim-overlay"></div>
+              <div id="puzzle-overlay"></div>
+              <div id="finish-overlay" class="finish-overlay" aria-hidden="true">
+                <div class="finish-overlay-inner" id="finish-actions" style="display:none;">
 
-        <!-- ПРАВО: лог пройденного -->
-        <aside class="subs-panel" aria-label="Пройденно">
-          <ul id="subs-log" class="subs-log"></ul>
-        </aside>
-      </div>
+                  <div class="finish-title">🎉Готово🎉</div>
+                  <div class="finish-sub muted">Что дальше?</div>
+
+                  <div class="finish-buttons">
+                    <button id="restart-btn" class="btn">Пройти тренировку заново</button>
+                    <button id="watch-segment-btn" class="btn">Смотреть отрывок</button>
+                  </div>
+
+                  <div class="muted small finish-hint">
+                    Отрывок будет проигран с момента начала <b>первой</b> фразы до конца <b>последней</b>.
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            <div id="puzzle-under" class="puzzle-under" style="display:none;">
+              <div class="puzzle-controls">
+                <div class="left-controls">
+                  <button id="listen-btn" class="btn">Повторить</button>
+                  <button id="listen-1s-btn" class="btn">Повторить (+1 сек)</button>
+                </div>
+
+                <div class="right-controls">
+                  <button id="skip-btn" class="btn secondary">Пропустить</button>
+
+                </div>
+              </div>
+
+              <div id="result-area" class="result-area"></div>
+              <div id="words-pool" class="words-container"></div>
+
+            </div>
+          </div>
+
+          <!-- ПРАВО: лог пройденного -->
+          <aside class="subs-panel" aria-label="Пройденно">
+            <ul id="subs-log" class="subs-log"></ul>
+          </aside>
+        </div>
+      </section>
     </section>
   </main>
 

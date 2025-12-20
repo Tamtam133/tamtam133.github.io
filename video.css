@@ -444,11 +444,6 @@
 }
 
 /* ===== Экран завершения (кнопки после оценки) ===== */
-.finish-actions {
-    margin-top: 6px;
-    padding-top: 6px;
-}
-
 .finish-title {
     font-weight: 800;
     font-size: 1.06em;

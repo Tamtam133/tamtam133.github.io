@@ -471,7 +471,7 @@
 /* ===== Оверлей завершения на видео ===== */
 .finish-overlay{
   position: absolute;
-  inset: 0;
+  inset: -1px;
   z-index: 20;
   display: none;
   align-items: center;
@@ -479,7 +479,7 @@
   padding: 16px;
   box-sizing: border-box;
 
-  border-radius: var(--r-3);
+  border-radius: calc(var(--r-3) + 1px);
 
   background-image: url("images/video_back.png");
   background-size: cover;

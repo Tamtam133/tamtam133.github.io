@@ -343,10 +343,6 @@ function closeRatingModalWithRating(value) {
     showFinishActions();
 
     showFinishOverlay();
-
-    if (fb) {
-        fb.innerHTML = `<span class="correct">Спасибо! Оценка: ${value}/5 ⭐</span>`;
-    }
 }
 
 // ===== Экран завершения (кнопки вместо паззла) =====
@@ -438,10 +434,6 @@ function playSubtitlesSegment() {
 
     ytPlayer.seekTo(segmentStart, true);
     ytPlayer.playVideo();
-
-    if (fb) {
-        fb.innerHTML = `<span class="muted">Просмотр отрывка: ${formatTime(segmentStart)} – ${formatTime(segmentEnd)}</span>`;
-    }
 
     scrollToPlayer();
 }

@@ -579,11 +579,17 @@
   transform: rotate(45deg);
 }
 
-.help-tip a.help-link {
+.help-tip a.help-link{
+  color: #3B6D8D;
   text-decoration: underline;
   font-weight: 700;
 }
 
-.help-tip a.help-link:hover {
+.help-tip a.help-link:hover{
+  color: #2f5d78;
   text-decoration: none;
+}
+
+.help-tip a.help-link:visited{
+  color: #3B6D8D;
 }

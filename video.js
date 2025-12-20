@@ -187,7 +187,7 @@ function setVideoDim(show) {
         setTextMaskVisible(false);
         setClickShield(true);
     } else {
-        if (!snippetMode) setClickShield(false);
+        if (!snippetMode && !segmentMode) setClickShield(false);
     }
 }
 
@@ -425,7 +425,7 @@ function playSubtitlesSegment() {
     activePuzzleIdx = null;
 
     setVideoDim(false);
-    setClickShield(false);
+    setClickShield(true);
 
     // маску показываем только если включена галка
     setTextMaskVisible(true);

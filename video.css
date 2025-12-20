@@ -92,12 +92,15 @@
     align-items: center;
 }
 
-.right-controls{justify-content:flex-end;}
+.right-controls {
+    justify-content: flex-end;
+}
+
 /* ===== Кнопки/статусы ===== */
 .btn {
     padding: 8px 12px;
-    background: #222;
-    border: 1px solid #444;
+    background: #3B6D8D;
+    border: 1px solid #3C586A;
     color: #fff;
     cursor: pointer;
     border-radius: 8px;
@@ -105,18 +108,19 @@
 }
 
 .btn:hover {
-    background: #333;
+    background: #3C586A;
 }
 
 .btn.secondary {
-    background: #111;
-    border-color: #333;
+    background: #DDA054;
+    border-color: #A58459;
     opacity: 0.95;
 }
 
 .btn.secondary:hover {
-    background: #1b1b1b;
+    background: #A58459;
 }
+
 .correct {
     color: #2e7d32;
     font-weight: 700;
@@ -353,17 +357,17 @@
 }
 
 /* ===== Модалка-оценка (после последнего пазла) ===== */
-.rating-modal{
+.rating-modal {
     position: fixed;
     inset: 0;
     display: none;
     z-index: 1000;
-    background: rgba(0,0,0,0.55);
+    background: rgba(0, 0, 0, 0.55);
     backdrop-filter: blur(2px);
     pointer-events: auto;
 }
 
-.rating-modal[aria-hidden="false"]{
+.rating-modal[aria-hidden="false"] {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -371,31 +375,31 @@
     box-sizing: border-box;
 }
 
-.rating-card{
+.rating-card {
     width: min(520px, 92vw);
     background: #fff;
     border-radius: var(--r-3);
     padding: 18px 18px 16px;
     box-sizing: border-box;
-    box-shadow: 0 12px 38px rgba(0,0,0,0.25);
-    border: 1px solid rgba(0,0,0,0.10);
+    box-shadow: 0 12px 38px rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(0, 0, 0, 0.10);
 }
 
-.rating-title{
+.rating-title {
     font-size: 1.18em;
     font-weight: 800;
     margin: 0 0 6px;
     color: #111;
 }
 
-.rating-sub{
+.rating-sub {
     font-size: 0.98em;
     line-height: 1.35;
-    color: rgba(0,0,0,0.70);
+    color: rgba(0, 0, 0, 0.70);
     margin-bottom: 14px;
 }
 
-.rating-stars{
+.rating-stars {
     display: flex;
     gap: 10px;
     justify-content: center;
@@ -403,51 +407,62 @@
     padding: 10px 0 4px;
 }
 
-.rate-star{
+.rate-star {
     appearance: none;
     background: transparent;
     border: none;
     padding: 0;
     cursor: pointer;
-    font-size: 38px;
-    line-height: 1;
-    color: rgba(0,0,0,0.22);
+    width: 38px;
+    height: 38px;
+    color: rgba(0, 0, 0, 0.25);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
     transform: translateY(-1px);
+    transition: color 0.15s ease, transform 0.15s ease;
 }
 
-.rate-star:hover{
-    transform: translateY(-2px) scale(1.03);
+.rate-star .star-ic {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
 }
 
-.rate-star.filled{
-    color: rgba(0,0,0,0.85);
-    text-shadow: 0 1px 0 rgba(0,0,0,0.12);
+.rate-star:hover {
+    transform: translateY(-2px) scale(1.05);
 }
 
-.rating-hint{
+.rate-star.filled {
+    color: #f5c518;
+}
+
+.rating-hint {
     text-align: center;
     margin-top: 6px;
 }
+
 /* ===== Экран завершения (кнопки после оценки) ===== */
-.finish-actions{
+.finish-actions {
     margin-top: 6px;
     padding-top: 6px;
-    border-top: 1px solid rgba(0,0,0,0.08);
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-.finish-title{
+.finish-title {
     font-weight: 800;
     font-size: 1.06em;
     text-align: center;
     margin: 6px 0 4px;
 }
 
-.finish-sub{
+.finish-sub {
     text-align: center;
     margin-bottom: 10px;
 }
 
-.finish-buttons{
+.finish-buttons {
     display: flex;
     gap: var(--puzzle-gap);
     justify-content: center;
@@ -455,6 +470,6 @@
     margin-bottom: 10px;
 }
 
-.finish-hint{
+.finish-hint {
     text-align: center;
 }

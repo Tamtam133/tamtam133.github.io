@@ -1,16 +1,7 @@
-/*
-  Каталог видео (динамический):
-  - читает videos.json
-  - рисует карточки в сетке
-  - табы (new/trend/starter/fav)
-  - поиск
-  - подгрузка по 12 элементов (кнопка + автоподгрузка при прокрутке)
-*/
-
 (function () {
   "use strict";
 
-  const JSON_URL = "videos.json"; // если положишь в /data, поменяй на "data/videos.json"
+  const JSON_URL = "data/videos.json";
   const PAGE_SIZE = 12;
 
   const els = {

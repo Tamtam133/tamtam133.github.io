@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "youtubeUrl": "https://www.youtube.com/watch?v=abc123",
+    "title": "Easy English Conversation #1",
+    "difficulty": 1,
+    "dateAdded": "2025-01-05",
+    "phraseCount": 18,
+    "state": 0,
+    "stars": 0
+  },
+  {
+    "id": 2,
+    "youtubeUrl": "https://www.youtube.com/watch?v=def456",
+    "title": "Daily English Phrases at Cafe",
+    "difficulty": 1,
+    "dateAdded": "2025-01-07",
+    "phraseCount": 22,
+    "state": 0,
+    "stars": 0
+  },
+  {
+    "id": 3,
+    "youtubeUrl": "https://www.youtube.com/watch?v=ghi789",
+    "title": "English Listening Practice – Travel",
+    "difficulty": 2,
+    "dateAdded": "2025-01-10",
+    "phraseCount": 30,
+    "state": 0,
+    "stars": 0
+  },
+  {
+    "id": 4,
+    "youtubeUrl": "https://www.youtube.com/watch?v=jkl012",
+    "title": "English for Beginners: Shopping",
+    "difficulty": 1,
+    "dateAdded": "2025-01-12",
+    "phraseCount": 16,
+    "state": 0,
+    "stars": 0
+  },
+  {
+    "id": 5,
+    "youtubeUrl": "https://www.youtube.com/watch?v=mno345",
+    "title": "Real English Conversation on the Street",
+    "difficulty": 2,
+    "dateAdded": "2025-01-15",
+    "phraseCount": 28,
+    "state": 0,
+    "stars": 0
+  },
+  {
+    "id": 6,
+    "youtubeUrl": "https://www.youtube.com/watch?v=pqr678",
+    "title": "Advanced English Listening – Interview",
+    "difficulty": 3,
+    "dateAdded": "2025-01-18",
+    "phraseCount": 42,
+    "state": 0,
+    "stars": 0
+  },
+  {
+    "id": 7,
+    "youtubeUrl": "https://www.youtube.com/watch?v=stu901",
+    "title": "English Phrases You Must Know",
+    "difficulty": 1,
+    "dateAdded": "2025-01-20",
+    "phraseCount": 20,
+    "state": 0,
+    "stars": 0
+  },
+  {
+    "id": 8,
+    "youtubeUrl": "https://www.youtube.com/watch?v=vwx234",
+    "title": "English Conversation at the Airport",
+    "difficulty": 2,
+    "dateAdded": "2025-01-22",
+    "phraseCount": 26,
+    "state": 0,
+    "stars": 0
+  },
+  {
+    "id": 9,
+    "youtubeUrl": "https://www.youtube.com/watch?v=yz0123",
+    "title": "Native English Speed Listening",
+    "difficulty": 3,
+    "dateAdded": "2025-01-25",
+    "phraseCount": 38,
+    "state": 0,
+    "stars": 0
+  },
+  {
+    "id": 10,
+    "youtubeUrl": "https://www.youtube.com/watch?v=aaa111",
+    "title": "English Small Talk Examples",
+    "difficulty": 1,
+    "dateAdded": "2025-01-28",
+    "phraseCount": 14,
+    "state": 0,
+    "stars": 0
+  },
+  {
+    "id": 11,
+    "youtubeUrl": "https://www.youtube.com/watch?v=bbb222",
+    "title": "Work English – Office Dialogues",
+    "difficulty": 2,
+    "dateAdded": "2025-02-01",
+    "phraseCount": 24,
+    "state": 0,
+    "stars": 0
+  },
+  {
+    "id": 12,
+    "youtubeUrl": "https://www.youtube.com/watch?v=ccc333",
+    "title": "Hard English Listening Test",
+    "difficulty": 3,
+    "dateAdded": "2025-02-03",
+    "phraseCount": 45,
+    "state": 0,
+    "stars": 0
+  }
+]

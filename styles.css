@@ -620,3 +620,64 @@ select {
     max-width: 100%;
   }
 }
+
+/* ---------- Каталог видео: закладки и интерактивные звёзды ---------- */
+
+/* Кнопка закладки на превью */
+.bookmark-btn{
+  position:absolute;
+  z-index:4;
+  top:10px;
+  left:10px;
+  transform: translateY(38px); /* чтобы не пересекалась с "Ур." */
+  width:34px;
+  height:34px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.7);
+  background: rgba(17,24,39,.55);
+  color:#fff;
+  display:inline-grid;
+  place-items:center;
+  padding:0;
+  cursor:pointer;
+  backdrop-filter: blur(4px);
+}
+.bookmark-btn:hover{ background: rgba(17,24,39,.72); }
+.bookmark-btn.is-on{
+  background: rgba(59,109,141,.85);
+  border-color: rgba(255,255,255,.85);
+}
+
+/* Управление звёздами */
+.stars-ctrl{
+  display:inline-flex;
+  align-items:center;
+  gap:2px;
+}
+.star-btn{
+  width:22px;
+  height:22px;
+  padding:0;
+  border:0;
+  background: transparent;
+  cursor:pointer;
+  opacity:.45;
+  line-height:1;
+  font-size:16px;
+}
+.star-btn.is-on{ opacity:.9; }
+.star-btn.is-mine{ opacity:1; }
+.star-btn:hover{ opacity:1; transform: translateY(-1px); }
+
+.star-clear{
+  width:22px;
+  height:22px;
+  padding:0;
+  border:0;
+  background: transparent;
+  cursor:pointer;
+  opacity:.55;
+  line-height:1;
+  font-size:14px;
+}
+.star-clear:hover{ opacity:1; }

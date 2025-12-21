@@ -5,9 +5,7 @@
     "title": "Easy English Conversation #1",
     "difficulty": 1,
     "dateAdded": "2025-01-05",
-    "phraseCount": 18,
-    "state": 0,
-    "stars": 0
+    "phraseCount": 18
   },
   {
     "id": 2,
@@ -15,9 +13,7 @@
     "title": "Daily English Phrases at Cafe",
     "difficulty": 1,
     "dateAdded": "2025-01-07",
-    "phraseCount": 22,
-    "state": 0,
-    "stars": 0
+    "phraseCount": 22
   },
   {
     "id": 3,
@@ -25,9 +21,7 @@
     "title": "English Listening Practice – Travel",
     "difficulty": 2,
     "dateAdded": "2025-01-10",
-    "phraseCount": 30,
-    "state": 0,
-    "stars": 0
+    "phraseCount": 30
   },
   {
     "id": 4,
@@ -35,9 +29,7 @@
     "title": "English for Beginners: Shopping",
     "difficulty": 1,
     "dateAdded": "2025-01-12",
-    "phraseCount": 16,
-    "state": 0,
-    "stars": 0
+    "phraseCount": 16
   },
   {
     "id": 5,
@@ -45,9 +37,7 @@
     "title": "Real English Conversation on the Street",
     "difficulty": 2,
     "dateAdded": "2025-01-15",
-    "phraseCount": 28,
-    "state": 0,
-    "stars": 0
+    "phraseCount": 28
   },
   {
     "id": 6,
@@ -55,9 +45,7 @@
     "title": "Advanced English Listening – Interview",
     "difficulty": 3,
     "dateAdded": "2025-01-18",
-    "phraseCount": 42,
-    "state": 0,
-    "stars": 0
+    "phraseCount": 42
   },
   {
     "id": 7,
@@ -65,9 +53,7 @@
     "title": "English Phrases You Must Know",
     "difficulty": 1,
     "dateAdded": "2025-01-20",
-    "phraseCount": 20,
-    "state": 0,
-    "stars": 0
+    "phraseCount": 20
   },
   {
     "id": 8,
@@ -75,9 +61,7 @@
     "title": "English Conversation at the Airport",
     "difficulty": 2,
     "dateAdded": "2025-01-22",
-    "phraseCount": 26,
-    "state": 0,
-    "stars": 0
+    "phraseCount": 26
   },
   {
     "id": 9,
@@ -85,9 +69,7 @@
     "title": "Native English Speed Listening",
     "difficulty": 3,
     "dateAdded": "2025-01-25",
-    "phraseCount": 38,
-    "state": 0,
-    "stars": 0
+    "phraseCount": 38
   },
   {
     "id": 10,
@@ -95,9 +77,7 @@
     "title": "English Small Talk Examples",
     "difficulty": 1,
     "dateAdded": "2025-01-28",
-    "phraseCount": 14,
-    "state": 0,
-    "stars": 0
+    "phraseCount": 14
   },
   {
     "id": 11,
@@ -105,9 +85,7 @@
     "title": "Work English – Office Dialogues",
     "difficulty": 2,
     "dateAdded": "2025-02-01",
-    "phraseCount": 24,
-    "state": 0,
-    "stars": 0
+    "phraseCount": 24
   },
   {
     "id": 12,
@@ -115,8 +93,6 @@
     "title": "Hard English Listening Test",
     "difficulty": 3,
     "dateAdded": "2025-02-03",
-    "phraseCount": 45,
-    "state": 0,
-    "stars": 0
+    "phraseCount": 45
   }
 ]

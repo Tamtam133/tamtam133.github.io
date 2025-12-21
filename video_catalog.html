@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ОДИН ШАГ: КОРЕЙСКИЙ — Каталог видео</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="container header-row">
+      <a class="brand" href="index.html">
+        <span class="brand-logo"></span>
+        <span class="brand-title">ОДИН ШАГ: КОРЕЙСКИЙ</span>
+      </a>
+
+      <!-- Профиль -->
+      <div class="profile">
+        <button id="profileBtn" class="avatar" aria-haspopup="menu" aria-expanded="false" aria-controls="profileMenu">
+          <img id="avatarImg" class="avatar-img" src="images/profile_icon.png" alt="Аватар пользователя">
+        </button>
+
+        <div id="profileMenu" class="profile-menu" role="menu" aria-hidden="true">
+          <div class="profile-card" id="profileCard">
+            <div class="avatar avatar-sm">
+              <img id="avatarImgSm" class="avatar-img" src="images/profile_icon.png" alt="">
+            </div>
+            <div class="profile-meta">
+              <div class="profile-name" id="profileName">Гость</div>
+              <div class="profile-sub muted" id="profileSub">
+                <span class="icon-streak" id="streakValue">0 дн</span>
+                <span class="icon-limit" id="limitValue">10</span>
+              </div>
+            </div>
+          </div>
+
+          <div id="menuLinks">
+            <a href="index.html" role="menuitem">Текст</a>
+            <a href="flashcards.html" role="menuitem">Карточки</a>
+            <a href="video_catalog.html" role="menuitem">Видео</a>
+            <hr>
+          </div>
+
+          <button id="loginBtn" role="menuitem">Войти / Зарегистрироваться</button>
+          <button id="logoutBtn" role="menuitem" class="hidden">Выйти</button>
+
+          <hr>
+
+          <button id="fakeAuth" role="menuitem">Условия использования</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container page">
+
+    <h2 class="page-title">Каталог видео</h2>
+
+    <!-- Поиск + действия -->
+    <section class="toolbar" aria-label="Фильтры и поиск">
+      <div class="search" role="search">
+        <span class="muted" aria-hidden="true">🔎</span>
+        <input id="videoSearch" type="text" placeholder="Поиск по названию…" autocomplete="off" />
+      </div>
+      <div class="toolbar-actions">
+        <button id="resetBtn" class="btn ghost" type="button">Сброс</button>
+      </div>
+    </section>
+
+    <!-- Табы -->
+    <section class="tabs" role="tablist" aria-label="Категории">
+      <button class="tab is-active" data-filter="new" role="tab" aria-selected="true">
+        Новые <span class="counter" data-counter="new">0</span>
+      </button>
+      <button class="tab" data-filter="trend" role="tab" aria-selected="false">
+        Популярные <span class="counter" data-counter="trend">0</span>
+      </button>
+      <button class="tab" data-filter="starter" role="tab" aria-selected="false">
+        Начатые вами <span class="counter" data-counter="starter">0</span>
+      </button>
+      <button class="tab" data-filter="fav" role="tab" aria-selected="false">
+        Избранное <span class="counter" data-counter="fav">0</span>
+      </button>
+    </section>
+
+    <div class="muted" id="statusLine" aria-live="polite"></div>
+
+    <!-- Сетка карточек -->
+    <section class="grid" id="videoGrid" aria-label="Список видео"></section>
+
+    <!-- Пагинация / подгрузка -->
+    <div class="more stack" style="margin-top:16px">
+      <button id="loadMoreBtn" class="btn" type="button">Показать ещё</button>
+      <div id="loadSentinel" class="sentinel" aria-hidden="true"></div>
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <small>© Твой проект по корейскому</small>
+    </div>
+  </footer>
+
+  <script src="video_catalog.js" defer></script>
+  <script src="profile.js" defer></script>
+</body>
+
+</html>

@@ -420,10 +420,6 @@ button:hover {
   backdrop-filter: blur(4px)
 }
 
-.chip.top-left {
-  left: 10px
-}
-
 .chip.top-right {
   right: 10px
 }
@@ -443,10 +439,6 @@ button:hover {
   display: inline-flex;
   align-items: center;
   gap: 6px
-}
-
-.metric.dim {
-  color: var(--muted)
 }
 
 .more {

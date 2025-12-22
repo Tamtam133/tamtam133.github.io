@@ -620,14 +620,10 @@ a {
 .bookmark-btn::before{
   content:"";
   position:absolute;
-  inset: 6px;
+  inset: 8px;
   border-radius: 10px;
   background: transparent;
   transition: background .12s ease;
-}
-
-.bookmark-btn:hover::before{
-  background: #f3f4f6;
 }
 
 .bookmark-btn svg {

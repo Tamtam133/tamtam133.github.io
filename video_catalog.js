@@ -435,15 +435,36 @@
   // -------------------- init --------------------
 
   async function init() {
+    // 1) Сначала грузим каталог и отдельно обрабатываем ошибки загрузки
+    let cat;
     try {
-      const resCat = await fetch(CATALOG_URL, { cache: "no-store" });
-      if (!resCat.ok) throw new Error(`Каталог: HTTP ${resCat.status}`);
+      const url = new URL(CATALOG_URL, window.location.href).toString(); // нормализуем относительный путь
+      const resCat = await fetch(url, { cache: "no-store" });
 
-      const cat = await resCat.json();
+      if (!resCat.ok) {
+        throw new Error(`HTTP ${resCat.status} ${resCat.statusText}`);
+      }
+
+      cat = await resCat.json();
       if (!Array.isArray(cat)) throw new Error("videos_catalog.json должен быть массивом");
+    } catch (err) {
+      console.error("Каталог не загрузился:", err);
+      els.grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-title">Ошибка загрузки каталога</div>
+        <div class="muted">
+          Не удалось загрузить <b>${escapeHtml(CATALOG_URL)}</b><br>
+          Причина: <b>${escapeHtml(err?.message || String(err))}</b>
+        </div>
+      </div>
+    `;
+      els.loadMore.style.display = "none";
+      return;
+    }
 
+    // 2) Дальше — инициализация интерфейса (если тут что-то сломается, покажем это отдельно)
+    try {
       catalog = cat;
-
       progress = loadProgress();
 
       setCounters();
@@ -451,16 +472,16 @@
       setActiveTab("new");
       render(true);
     } catch (err) {
-      console.error("Не удалось загрузить каталог", err);
+      console.error("Ошибка инициализации UI:", err);
       els.grid.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-title">Ошибка загрузки каталога</div>
-          <div class="muted">
-            Проверь путь и наличие файла:
-            <b>${escapeHtml(CATALOG_URL)}</b>.
-          </div>
+      <div class="empty-state">
+        <div class="empty-title">Ошибка интерфейса</div>
+        <div class="muted">
+          Каталог загрузился, но упал интерфейс.<br>
+          Причина: <b>${escapeHtml(err?.message || String(err))}</b>
         </div>
-      `;
+      </div>
+    `;
       els.loadMore.style.display = "none";
     }
   }

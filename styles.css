@@ -300,10 +300,15 @@ a { text-decoration: none; color: inherit }
 /* ---------- Хедер каталога (табы слева, фильтр справа) ---------- */
 .catalog-head{
   display:flex;
+  flex-wrap:wrap;
   align-items:center;
-  justify-content:space-between;
   gap:12px;
   margin: 10px 0 10px;
+}
+
+.tabs{
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 @media (max-width: 720px){
@@ -316,9 +321,11 @@ a { text-decoration: none; color: inherit }
 /* ---------- Dropdown сложности ---------- */
 .diff-dropdown{
   position: relative;
+  margin-left: auto;        /* ← вот это прижимает вправо */
   flex: 0 0 auto;
 }
 
+/* кнопка */
 .diff-toggle{
   display:flex;
   align-items:center;
@@ -330,12 +337,10 @@ a { text-decoration: none; color: inherit }
   background: #fff;
   font-weight: 600;
   cursor: pointer;
-  min-width: 180px;
+  min-width: 170px;
 }
 
-.diff-toggle:hover{
-  background:#f9fafb;
-}
+.diff-toggle:hover{ background:#f9fafb; }
 
 .diff-chev{
   color: var(--muted);
@@ -344,33 +349,33 @@ a { text-decoration: none; color: inherit }
   transition: transform .15s ease;
 }
 
-.diff-dropdown.is-open .diff-chev{
-  transform: rotate(180deg);
-}
+.diff-dropdown.is-open .diff-chev{ transform: rotate(180deg); }
 
-.diff-panel{
+/* панель — строго поверх, не участвует в потоке */
+.diff-dropdown .diff-panel{
   position:absolute;
   right:0;
   top: calc(100% + 8px);
-  width: 320px;
-  max-width: calc(100vw - 24px);
+  width: 340px;
+  max-width: min(340px, calc(100vw - 24px));
   background:#fff;
   border: 1px solid var(--border);
   border-radius: 14px;
   box-shadow: 0 12px 30px rgba(0,0,0,.12);
   padding: 8px;
-  z-index: 60;
-  display:none;
+  z-index: 200;             /* выше карточек/чипов */
+}
+
+/* по умолчанию скрыта */
+.diff-dropdown:not(.is-open) .diff-panel{
+  display:none !important;  /* ← чтобы никакие другие правила не “раскрывали” */
 }
 
 .diff-dropdown.is-open .diff-panel{
   display:block;
 }
 
-.diff-list{
-  display:grid;
-  gap:6px;
-}
+.diff-list{ display:grid; gap:6px; }
 
 .diff-item{
   display:grid;
@@ -382,9 +387,7 @@ a { text-decoration: none; color: inherit }
   cursor:pointer;
 }
 
-.diff-item:hover{
-  background:#f6f7fb;
-}
+.diff-item:hover{ background:#f6f7fb; }
 
 .diff-item input{
   width: 18px;
@@ -392,16 +395,9 @@ a { text-decoration: none; color: inherit }
   margin:0;
 }
 
-.diff-text{
-  font-weight: 500;
-}
+.diff-text{ font-weight: 500; }
 
-.diff-bars{
-  display:flex;
-  align-items:center;
-  gap:4px;
-}
-
+.diff-bars{ display:flex; align-items:center; gap:4px; }
 .diff-bars span{
   width: 5px;
   height: 18px;
@@ -409,7 +405,7 @@ a { text-decoration: none; color: inherit }
   background:#d1d5db;
 }
 
-/* раскраска “палок” как на твоём примере */
+/* палки */
 .diff-bars.diff-1 span:nth-child(1){ background:#61b86a; }
 .diff-bars.diff-2 span:nth-child(1),
 .diff-bars.diff-2 span:nth-child(2){ background:#f0a128; }

@@ -358,6 +358,10 @@
       toggleDiff();
     });
 
+    els.diffPanel?.addEventListener("click", (e) => {
+      e.stopPropagation();
+    });
+
     // закрытие дропдауна по клику вне
     document.addEventListener("click", (e) => {
       if (!els.diffDropdown) return;

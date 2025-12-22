@@ -205,8 +205,6 @@
     const title = escapeHtml(v.title ?? "(без названия)");
     const phrases = Number(v.phraseCount) || 0;
     const diff = clamp(Number(v.difficulty) || 1, 1, 3);
-    // state остаётся в данных (для вкладки «Начатые вами»),
-    // но индикатор прогресса в карточке больше не рисуем.
 
     const bookmarked = v.userBookmarked ? 1 : 0;
 
@@ -214,7 +212,12 @@
     const img = thumbUrl(v);
 
     const bmLabel = bookmarked ? "Убрать из закладок" : "В закладки";
-    const bmGlyph = bookmarked ? "🔖" : "📑";
+
+    const bmSvg = `
+      <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="currentColor" aria-hidden="true" focusable="false">
+        <path d="m480-240-168 72q-40 17-76-6.5T200-241v-519q0-33 23.5-56.5T280-840h400q33 0 56.5 23.5T760-760v519q0 43-36 66.5t-76 6.5l-168-72Zm0-88 200 86v-518H280v518l200-86Zm0-432H280h400-200Z"/>
+      </svg>
+    `;
 
     return `
       <article class="video-card" data-id="${v.id}">
@@ -222,26 +225,28 @@
           <img src="${img}" alt="" loading="lazy" referrerpolicy="no-referrer" />
           <span class="chip top-right">${phrases} фраз</span>
 
-          <button class="bookmark-btn ${bookmarked ? "is-on" : ""}"
-            type="button"
-            data-action="bookmark"
-            data-id="${v.id}"
-            aria-label="${bmLabel}"
-            title="${bmLabel}">
-            ${bmGlyph}
-          </button>
-
           <span class="thumb-overlay"></span>
           <span class="title">${title}</span>
         </a>
 
         <div class="meta-row">
           <div class="meta-left">
-            <span class="meta-diff" title="Сложность">
-              <span class="meta-level">Ур. ${diff}</span>
+            <!-- Визуально только палки, без текста "Ур. X" -->
+            <span class="meta-diff" title="Сложность" aria-label="Сложность: уровень ${diff}">
               <span class="diff-bars diff-${diff} compact" aria-hidden="true"><span></span><span></span><span></span></span>
             </span>
           </div>
+
+          <!-- Закладка теперь в правом нижнем углу карточки -->
+          <button class="bookmark-btn ${bookmarked ? "is-on" : ""}"
+            type="button"
+            data-action="bookmark"
+            data-id="${v.id}"
+            aria-label="${bmLabel}"
+            aria-pressed="${bookmarked ? "true" : "false"}"
+            title="${bmLabel}">
+            ${bmSvg}
+          </button>
         </div>
       </article>
     `;
@@ -327,6 +332,7 @@
     const btn = e.target.closest("button[data-action]");
     if (!btn) return;
 
+    // чтобы кнопка не триггерила переходы/клики вокруг
     e.preventDefault();
     e.stopPropagation();
 
@@ -365,9 +371,7 @@
 
     // закрытие по ESC
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        closeDiff();
-      }
+      if (e.key === "Escape") closeDiff();
     });
 
     // фильтр сложности
@@ -432,10 +436,9 @@
   // -------------------- init --------------------
 
   async function init() {
-    // 1) Сначала грузим каталог и отдельно обрабатываем ошибки загрузки
     let cat;
     try {
-      const url = new URL(CATALOG_URL, window.location.href).toString(); // нормализуем относительный путь
+      const url = new URL(CATALOG_URL, window.location.href).toString();
       const resCat = await fetch(url, { cache: "no-store" });
 
       if (!resCat.ok) {
@@ -459,7 +462,6 @@
       return;
     }
 
-    // 2) Дальше — инициализация интерфейса (если тут что-то сломается, покажем это отдельно)
     try {
       catalog = cat;
       progress = loadProgress();

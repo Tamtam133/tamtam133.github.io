@@ -10,6 +10,9 @@
   --chip: #111827cc;
   --radius: 14px;
   --shadow: 0 8px 24px -12px rgba(0, 0, 0, .2);
+
+  /* новый акцент для активной закладки */
+  --ok: #61b86a;
 }
 
 * { box-sizing: border-box }
@@ -321,11 +324,10 @@ a { text-decoration: none; color: inherit }
 /* ---------- Dropdown сложности ---------- */
 .diff-dropdown{
   position: relative;
-  margin-left: auto;        /* ← вот это прижимает вправо */
+  margin-left: auto;
   flex: 0 0 auto;
 }
 
-/* кнопка */
 .diff-toggle{
   display:flex;
   align-items:center;
@@ -351,7 +353,6 @@ a { text-decoration: none; color: inherit }
 
 .diff-dropdown.is-open .diff-chev{ transform: rotate(180deg); }
 
-/* панель — строго поверх, не участвует в потоке */
 .diff-dropdown .diff-panel{
   position:absolute;
   right:0;
@@ -363,12 +364,11 @@ a { text-decoration: none; color: inherit }
   border-radius: 14px;
   box-shadow: 0 12px 30px rgba(0,0,0,.12);
   padding: 8px;
-  z-index: 200;             /* выше карточек/чипов */
+  z-index: 200;
 }
 
-/* по умолчанию скрыта */
 .diff-dropdown:not(.is-open) .diff-panel{
-  display:none !important;  /* ← чтобы никакие другие правила не “раскрывали” */
+  display:none !important;
 }
 
 .diff-dropdown.is-open .diff-panel{
@@ -395,8 +395,9 @@ a { text-decoration: none; color: inherit }
   margin:0;
 }
 
-.diff-text{ font-weight: 300; }
+.diff-text{ font-weight: 400; }
 
+/* палки сложности */
 .diff-bars{ display:flex; align-items:center; gap:4px; }
 .diff-bars span{
   width: 5px;
@@ -413,7 +414,7 @@ a { text-decoration: none; color: inherit }
 }
 
 /* палки */
-.diff-bars.diff-1 span:nth-child(1){ background:#61b86a; }
+.diff-bars.diff-1 span:nth-child(1){ background: var(--ok); }
 .diff-bars.diff-2 span:nth-child(1),
 .diff-bars.diff-2 span:nth-child(2){ background:#f0a128; }
 .diff-bars.diff-3 span:nth-child(1),
@@ -421,7 +422,6 @@ a { text-decoration: none; color: inherit }
 .diff-bars.diff-3 span:nth-child(3){ background:#e36a63; }
 
 /* ---------- Сетка ---------- */
-/* ВАЖНО: теперь 4 карточки в ряд на широких экранах */
 .grid{
   display:grid;
   gap:16px;
@@ -504,7 +504,7 @@ a { text-decoration: none; color: inherit }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
   padding: 10px 12px;
   border-top: 1px solid var(--border);
   font-size: 14px
@@ -523,11 +523,47 @@ a { text-decoration: none; color: inherit }
   gap:8px;
 }
 
-.meta-level{
-  font-weight: 600;
-  letter-spacing: .2px;
+/* ---------- Кнопка закладки: теперь внизу справа ---------- */
+.bookmark-btn{
+  flex: 0 0 auto;
+  margin-left: auto;
+
+  width: 38px;
+  height: 38px;
+
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #fff;
+
+  display: inline-grid;
+  place-items: center;
+
+  cursor: pointer;
+  color: #5f6368; /* серое по умолчанию */
+  padding: 0;
 }
 
+.bookmark-btn svg{
+  width: 24px;
+  height: 24px;
+  display: block;
+  fill: currentColor;
+}
+
+.bookmark-btn:hover{
+  background: #f9fafb;
+}
+
+.bookmark-btn:active{
+  transform: translateY(1px);
+}
+
+.bookmark-btn.is-on{
+  color: var(--ok);               /* зелёное в активном */
+  border-color: rgba(97,184,106,.35);
+}
+
+/* ---------- Остальное ---------- */
 .metric {
   display: inline-flex;
   align-items: center;
@@ -554,33 +590,6 @@ a { text-decoration: none; color: inherit }
 .empty-title {
   font-weight: 700;
   margin-bottom: 6px;
-}
-
-/* ---------- Закладки ---------- */
-.bookmark-btn{
-  position:absolute;
-  z-index:4;
-  top:10px;
-  left:10px;
-  transform: none;
-  width:34px;
-  height:34px;
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,.7);
-  background: rgba(17,24,39,.55);
-  color:#fff;
-  display:inline-grid;
-  place-items:center;
-  padding:0;
-  cursor:pointer;
-  backdrop-filter: blur(4px);
-}
-
-.bookmark-btn:hover{ background: rgba(17,24,39,.72); }
-
-.bookmark-btn.is-on{
-  background: rgba(59,109,141,.85);
-  border-color: rgba(255,255,255,.85);
 }
 
 /* ---------- Утилиты ---------- */

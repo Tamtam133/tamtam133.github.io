@@ -5,6 +5,7 @@
   const CATALOG_URL = "data/videos_catalog.json";
 
   // -------------------- локальные данные пользователя --------------------
+  // Храним только прогресс/закладки. (Оценки/звёзды удалены.)
   const LS_PROGRESS = "video_progress_v1"; // { version, updatedAt, videos: { [id]: { state, bookmarked } } }
 
   const PAGE_SIZE = 12;
@@ -20,7 +21,11 @@
     sentinel: document.getElementById("loadSentinel"),
     status: document.getElementById("statusLine"),
 
-    difficultyWrap: document.getElementById("difficultyFilters"),
+    // dropdown сложности
+    diffDropdown: document.getElementById("diffDropdown"),
+    diffToggle: document.getElementById("diffToggle"),
+    diffPanel: document.getElementById("diffPanel"),
+
     difficultyChecks: Array.from(document.querySelectorAll(".diff-check")),
   };
 
@@ -125,7 +130,30 @@
     return "▯▯▯";
   }
 
+  // -------------------- dropdown сложности --------------------
+
+  function openDiff() {
+    if (!els.diffDropdown) return;
+    els.diffDropdown.classList.add("is-open");
+    els.diffToggle?.setAttribute("aria-expanded", "true");
+    els.diffPanel?.setAttribute("aria-hidden", "false");
+  }
+
+  function closeDiff() {
+    if (!els.diffDropdown) return;
+    els.diffDropdown.classList.remove("is-open");
+    els.diffToggle?.setAttribute("aria-expanded", "false");
+    els.diffPanel?.setAttribute("aria-hidden", "true");
+  }
+
+  function toggleDiff() {
+    const isOpen = els.diffDropdown?.classList.contains("is-open");
+    if (isOpen) closeDiff();
+    else openDiff();
+  }
+
   // -------------------- фильтры/поиск/сортировки --------------------
+
   function applyDifficulty(list) {
     if (!activeDifficulties || activeDifficulties.size === 0) return list;
     return list.filter(v => activeDifficulties.has(clamp(Number(v.difficulty) || 1, 1, 3)));
@@ -133,7 +161,6 @@
 
   function enrich(video) {
     const user = getUserRow(video.id);
-
     return {
       ...video,
       userState: user.state,
@@ -147,7 +174,7 @@
     return list.filter(v => String(v.title || "").toLowerCase().includes(qq));
   }
 
-function getFilterList(list, filter) {
+  function getFilterList(list, filter) {
     const enriched = list.map(enrich);
 
     enriched.sort((a, b) => (parseDate(b.dateAdded) - parseDate(a.dateAdded)) || (b.id - a.id));
@@ -295,7 +322,7 @@ function getFilterList(list, filter) {
       .filter(c => c.checked)
       .map(c => clamp(Number(c.value) || 1, 1, 3));
 
-    // не даём снять все галочки (чтобы страница не выглядела "сломано")
+    // не даём снять все галочки (чтобы не было пустого каталога "по ошибке")
     if (selected.length === 0 && changedEl) {
       changedEl.checked = true;
       selected = [clamp(Number(changedEl.value) || 1, 1, 3)];
@@ -325,6 +352,28 @@ function getFilterList(list, filter) {
   }
 
   function bindEvents() {
+    // dropdown toggle
+    els.diffToggle?.addEventListener("click", (e) => {
+      e.preventDefault();
+      toggleDiff();
+    });
+
+    // закрытие дропдауна по клику вне
+    document.addEventListener("click", (e) => {
+      if (!els.diffDropdown) return;
+      if (!els.diffDropdown.classList.contains("is-open")) return;
+
+      const inside = e.target.closest("#diffDropdown");
+      if (!inside) closeDiff();
+    });
+
+    // закрытие по ESC
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeDiff();
+      }
+    });
+
     // фильтр сложности
     syncDifficultyFromUI();
     els.difficultyChecks.forEach(chk => {
@@ -335,14 +384,15 @@ function getFilterList(list, filter) {
       });
     });
 
+    // табы
     els.tabs.forEach(t => {
       t.addEventListener("click", () => {
         setActiveTab(t.dataset.filter);
         render(true);
-
       });
     });
 
+    // поиск
     els.search.addEventListener("input", () => {
       query = els.search.value;
       render(true);
@@ -363,15 +413,15 @@ function getFilterList(list, filter) {
       });
     }
 
-
+    // подгрузка
     els.loadMore.addEventListener("click", () => render(false));
     els.grid.addEventListener("click", handleGridClick);
 
     if ("IntersectionObserver" in window && els.sentinel) {
       const io = new IntersectionObserver(
         (entries) => {
-          const e = entries[0];
-          if (!e.isIntersecting) return;
+          const en = entries[0];
+          if (!en.isIntersecting) return;
           if (els.loadMore.style.display === "none") return;
           render(false);
         },

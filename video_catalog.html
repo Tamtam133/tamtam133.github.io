@@ -58,7 +58,7 @@
 
     <h2 class="page-title">Каталог видео</h2>
 
-    <!-- Поиск + действия -->
+    <!-- Поиск -->
     <section class="toolbar" aria-label="Фильтры и поиск">
       <div class="search" role="search">
         <span class="search-ico" aria-hidden="true">
@@ -81,55 +81,71 @@
       </div>
     </section>
 
+    <!-- Табы + дропдаун сложности справа -->
+    <div class="catalog-head" aria-label="Категории и фильтры">
+      <section class="tabs" role="tablist" aria-label="Категории">
+        <button class="tab is-active" data-filter="new" role="tab" aria-selected="true">
+          Новые <span class="counter" data-counter="new">0</span>
+        </button>
+        <button class="tab" data-filter="starter" role="tab" aria-selected="false">
+          Начатые вами <span class="counter" data-counter="starter">0</span>
+        </button>
+        <button class="tab" data-filter="fav" role="tab" aria-selected="false">
+          Избранное <span class="counter" data-counter="fav">0</span>
+        </button>
+      </section>
 
-    <div class="catalog-layout">
-      <div class="catalog-main">
-        <!-- Табы -->
-        <section class="tabs" role="tablist" aria-label="Категории">
-          <button class="tab is-active" data-filter="new" role="tab" aria-selected="true">
-            Новые <span class="counter" data-counter="new">0</span>
-          </button>
-          <button class="tab" data-filter="starter" role="tab" aria-selected="false">
-            Начатые вами <span class="counter" data-counter="starter">0</span>
-          </button>
-          <button class="tab" data-filter="fav" role="tab" aria-selected="false">
-            Избранное <span class="counter" data-counter="fav">0</span>
-          </button>
-        </section>
+      <!-- Dropdown сложности -->
+      <div class="diff-dropdown" id="diffDropdown">
+        <button class="diff-toggle" id="diffToggle" type="button" aria-expanded="false"
+          aria-controls="diffPanel">
+          <span>Сложность</span>
+          <span class="diff-chev" aria-hidden="true">
+            <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 0 24 24" width="20" fill="currentColor">
+              <path d="M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z" />
+            </svg>
+          </span>
+        </button>
 
-        <div class="muted" id="statusLine" aria-live="polite"></div>
-
-        <!-- Сетка карточек -->
-        <section class="grid" id="videoGrid" aria-label="Список видео"></section>
-
-        <!-- Пагинация / подгрузка -->
-        <div class="more stack" style="margin-top:16px">
-          <button id="loadMoreBtn" class="btn" type="button">Показать ещё</button>
-          <div id="loadSentinel" class="sentinel" aria-hidden="true"></div>
-        </div>
-      </div>
-
-      <!-- Фильтры справа -->
-      <aside class="filters" aria-label="Фильтры">
-        <div class="filters-card">
-          <div class="filters-title">Сложность</div>
-          <div class="checklist" id="difficultyFilters">
-            <label class="check">
+        <div class="diff-panel" id="diffPanel" aria-hidden="true">
+          <div class="diff-list" id="difficultyFilters">
+            <label class="diff-item">
               <input type="checkbox" class="diff-check" value="1" checked>
-              <span>Уровень 1</span>
+              <span class="diff-text">Для начинающих</span>
+              <span class="diff-bars diff-1" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </span>
             </label>
-            <label class="check">
+
+            <label class="diff-item">
               <input type="checkbox" class="diff-check" value="2" checked>
-              <span>Уровень 2</span>
+              <span class="diff-text">Средняя сложность</span>
+              <span class="diff-bars diff-2" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </span>
             </label>
-            <label class="check">
+
+            <label class="diff-item">
               <input type="checkbox" class="diff-check" value="3" checked>
-              <span>Уровень 3</span>
+              <span class="diff-text">Очень сложно</span>
+              <span class="diff-bars diff-3" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </span>
             </label>
           </div>
-          <div class="muted" style="font-size:.9rem; margin-top:8px">Сними галочки, чтобы скрыть уровень.</div>
         </div>
-      </aside>
+      </div>
+    </div>
+
+    <div class="muted" id="statusLine" aria-live="polite"></div>
+
+    <!-- Сетка карточек -->
+    <section class="grid" id="videoGrid" aria-label="Список видео"></section>
+
+    <!-- Пагинация / подгрузка -->
+    <div class="more stack" style="margin-top:16px">
+      <button id="loadMoreBtn" class="btn" type="button">Показать ещё</button>
+      <div id="loadSentinel" class="sentinel" aria-hidden="true"></div>
     </div>
 
   </main>

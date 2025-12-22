@@ -276,14 +276,25 @@ button:hover {
 }
 
 .search {
-  flex: 1 1 420px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 10px 12px
+  gap: 10px;
+  border-radius: 999px;
+  padding: 10px 12px;
+}
+
+.search-clear {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.search.has-value .search-clear {
+  opacity: .9;
+  pointer-events: auto;
 }
 
 .search input {

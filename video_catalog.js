@@ -14,8 +14,9 @@
     grid: document.getElementById("videoGrid"),
     tabs: Array.from(document.querySelectorAll(".tab")),
     counters: Array.from(document.querySelectorAll("[data-counter]")),
+    searchWrap: document.querySelector(".search"),
     search: document.getElementById("videoSearch"),
-    reset: document.getElementById("resetBtn"),
+    clearSearch: document.getElementById("clearSearchBtn"),
     loadMore: document.getElementById("loadMoreBtn"),
     sentinel: document.getElementById("loadSentinel"),
     status: document.getElementById("statusLine"),
@@ -111,7 +112,7 @@
     return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : "images/video_back.png";
   }
 
-    function parseDate(dateStr) {
+  function parseDate(dateStr) {
     const t = Date.parse(dateStr);
     return Number.isFinite(t) ? t : 0;
   }
@@ -127,7 +128,7 @@
     return sum / count;
   }
 
-    function effectiveAgg(videoId) {
+  function effectiveAgg(videoId) {
     const key = String(videoId);
     const base = ratingsAgg[key] || { sum: 0, count: 0 };
     const me = getUserRow(videoId).myRating;
@@ -176,7 +177,7 @@
     return list.filter(v => String(v.title || "").toLowerCase().includes(qq));
   }
 
-    function getFilterList(list, filter) {
+  function getFilterList(list, filter) {
     const enriched = list.map(enrich);
 
     enriched.sort((a, b) => (parseDate(b.dateAdded) - parseDate(a.dateAdded)) || (b.id - a.id));
@@ -318,7 +319,21 @@
     });
   }
 
-    function handleGridClick(e) {
+  function syncSearchUI() {
+    const has = Boolean(els.search && els.search.value.trim());
+    if (els.searchWrap) els.searchWrap.classList.toggle("has-value", has);
+    if (els.clearSearch) els.clearSearch.disabled = !has;
+  }
+
+  function resetSearchAndFilters() {
+    if (els.search) els.search.value = "";
+    query = "";
+    setActiveTab("new");
+    render(true);
+    syncSearchUI();
+  }
+
+  function handleGridClick(e) {
     const btn = e.target.closest("button[data-action]");
     if (!btn) return;
 
@@ -358,20 +373,30 @@
       t.addEventListener("click", () => {
         setActiveTab(t.dataset.filter);
         render(true);
+
       });
     });
 
     els.search.addEventListener("input", () => {
       query = els.search.value;
       render(true);
+      syncSearchUI();
     });
 
-    els.reset.addEventListener("click", () => {
-      els.search.value = "";
-      query = "";
-      setActiveTab("new");
-      render(true);
+    els.search.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        resetSearchAndFilters();
+      }
     });
+
+    if (els.clearSearch) {
+      els.clearSearch.addEventListener("click", () => {
+        resetSearchAndFilters();
+        els.search?.focus();
+      });
+    }
+
 
     els.loadMore.addEventListener("click", () => render(false));
     els.grid.addEventListener("click", handleGridClick);
@@ -388,6 +413,8 @@
       );
       io.observe(els.sentinel);
     }
+
+    syncSearchUI();
   }
 
   // -------------------- init --------------------

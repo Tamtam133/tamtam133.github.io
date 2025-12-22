@@ -275,35 +275,77 @@ button:hover {
   margin: 12px 0 8px
 }
 
-.search {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border-radius: 999px;
-  padding: 10px 12px;
+.search{
+  display:flex;
+  flex: 1 1 100%;
+  max-width: 100%;
+  align-items:center;
+  box-sizing: border-box;
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:999px;
+  height:44px;
+  padding:0 12px;
+  gap:8px;
 }
 
-.search-clear {
-  width: 34px;
-  height: 34px;
-  border: 0;
-  background: transparent;
-  opacity: 0;
-  pointer-events: none;
+
+.search:focus-within{
+  box-shadow: 0 0 0 4px rgba(59,109,141,.12);
+  border-color: rgba(59,109,141,.45);
 }
 
-.search.has-value .search-clear {
-  opacity: .9;
-  pointer-events: auto;
+
+.search-clear{
+  width:32px;
+  height:32px;
+  border:0;
+  background:transparent;
+  border-radius:999px;
+  cursor:pointer;
+
+  opacity:0;
+  pointer-events:none;
 }
 
-.search input {
-  border: 0;
-  outline: 0;
-  background: transparent;
-  width: 100%;
-  font-size: 16px
+.search.has-value .search-clear{
+  opacity:.9;
+  pointer-events:auto;
 }
+
+.search-clear:hover{
+  background: rgba(0,0,0,.06);
+}
+
+.search-clear:active{
+  background: rgba(0,0,0,.10);
+}
+
+.search-ico,
+.search-clear{
+  color:#9aa0a6;
+  flex:0 0 auto;
+  display:inline-grid;
+  place-items:center;
+}
+
+.search-ico svg,
+.search-clear svg{
+  display:block;
+  fill: currentColor;
+}
+
+.search input{
+  flex:1;
+  min-width:0;
+  border:0;
+  outline:0;
+  background:transparent;
+  padding:0;
+  height:100%;
+  font-size:16px;
+}
+
 
 .toolbar-actions {
   display: flex;

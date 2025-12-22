@@ -605,6 +605,7 @@ a {
   height: 38px;
 
   border: 0;
+  position: relative;
   background: transparent;
   border-radius: 12px;
 
@@ -616,10 +617,25 @@ a {
   padding: 0;
 }
 
+.bookmark-btn::before{
+  content:"";
+  position:absolute;
+  inset: 6px;
+  border-radius: 10px;
+  background: transparent;
+  transition: background .12s ease;
+}
+
+.bookmark-btn:hover::before{
+  background: #f3f4f6;
+}
+
 .bookmark-btn svg {
   width: 24px;
   height: 24px;
   display: block;
+    position: relative;
+  z-index: 1;
   fill: currentColor;
 }
 

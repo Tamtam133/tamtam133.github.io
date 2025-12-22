@@ -282,7 +282,7 @@ a { text-decoration: none; color: inherit }
   padding: 10px 14px;
   border: 1px solid var(--border);
   background: #fff;
-  border-radius: 999px;
+  border-radius:  var(--radius);
   cursor: pointer;
   color: var(--text)
 }

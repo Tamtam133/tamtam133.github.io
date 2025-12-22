@@ -615,11 +615,13 @@ a {
   cursor: pointer;
   color: #5f6368;
   padding: 0;
+
+  outline: none;
 }
 
-.bookmark-btn::before{
-  content:"";
-  position:absolute;
+.bookmark-btn::before {
+  content: "";
+  position: absolute;
   inset: 8px;
   border-radius: 10px;
   background: transparent;
@@ -630,7 +632,7 @@ a {
   width: 24px;
   height: 24px;
   display: block;
-    position: relative;
+  position: relative;
   z-index: 1;
   fill: currentColor;
 }
@@ -697,4 +699,8 @@ a {
   padding: 10px 14px;
   font-weight: 600;
   cursor: pointer;
+}
+
+.bookmark-btn:hover {
+  background: transparent !important;
 }

@@ -395,7 +395,7 @@ a { text-decoration: none; color: inherit }
   margin:0;
 }
 
-.diff-text{ font-weight: 500; }
+.diff-text{ font-weight: 300; }
 
 .diff-bars{ display:flex; align-items:center; gap:4px; }
 .diff-bars span{
@@ -403,6 +403,13 @@ a { text-decoration: none; color: inherit }
   height: 18px;
   border-radius: 3px;
   background:#d1d5db;
+}
+
+/* компактная версия (для карточек) */
+.diff-bars.compact span{
+  width: 4px;
+  height: 14px;
+  border-radius: 3px;
 }
 
 /* палки */
@@ -503,6 +510,24 @@ a { text-decoration: none; color: inherit }
   font-size: 14px
 }
 
+.meta-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+
+.meta-diff{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+}
+
+.meta-level{
+  font-weight: 600;
+  letter-spacing: .2px;
+}
+
 .metric {
   display: inline-flex;
   align-items: center;
@@ -537,7 +562,7 @@ a { text-decoration: none; color: inherit }
   z-index:4;
   top:10px;
   left:10px;
-  transform: translateY(38px);
+  transform: none;
   width:34px;
   height:34px;
   border-radius:999px;

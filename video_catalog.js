@@ -123,12 +123,6 @@
     return Number.isFinite(t) ? t : 0;
   }
 
-  function progressGlyph(state) {
-    if (state === 2) return "▮▮▮";
-    if (state === 1) return "▮▯▯";
-    return "▯▯▯";
-  }
-
   // -------------------- dropdown сложности --------------------
 
   function openDiff() {
@@ -211,7 +205,8 @@
     const title = escapeHtml(v.title ?? "(без названия)");
     const phrases = Number(v.phraseCount) || 0;
     const diff = clamp(Number(v.difficulty) || 1, 1, 3);
-    const state = clamp(Number(v.userState) || 0, 0, 2);
+    // state остаётся в данных (для вкладки «Начатые вами»),
+    // но индикатор прогресса в карточке больше не рисуем.
 
     const bookmarked = v.userBookmarked ? 1 : 0;
 
@@ -226,7 +221,6 @@
         <a class="thumb" href="${href}" aria-label="Открыть видео: ${title}">
           <img src="${img}" alt="" loading="lazy" referrerpolicy="no-referrer" />
           <span class="chip top-right">${phrases} фраз</span>
-          <span class="chip top-left">Ур. ${diff}</span>
 
           <button class="bookmark-btn ${bookmarked ? "is-on" : ""}"
             type="button"
@@ -243,7 +237,10 @@
 
         <div class="meta-row">
           <div class="meta-left">
-            <span class="metric" title="Прогресс">${progressGlyph(state)}</span>
+            <span class="meta-diff" title="Сложность">
+              <span class="meta-level">Ур. ${diff}</span>
+              <span class="diff-bars diff-${diff} compact" aria-hidden="true"><span></span><span></span><span></span></span>
+            </span>
           </div>
         </div>
       </article>

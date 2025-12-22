@@ -420,6 +420,53 @@ button:hover {
   gap: 16px
 }
 
+/* ---------- Каталог видео: двухколоночный лэйаут ---------- */
+.catalog-layout{
+  display:grid;
+  grid-template-columns: 1fr 260px;
+  gap:16px;
+  align-items:start;
+}
+
+.catalog-main{ min-width:0; }
+
+.filters{ position: sticky; top: 88px; }
+
+.filters-card{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: var(--shadow);
+}
+
+.filters-title{
+  font-weight:700;
+  margin: 2px 0 10px;
+}
+
+.checklist{ display:grid; gap:10px; }
+
+.check{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  cursor:pointer;
+}
+
+.check:hover{ background:#f9fafb; }
+
+.check input{ width:16px; height:16px; }
+
+@media (max-width: 920px){
+  .catalog-layout{ grid-template-columns: 1fr; }
+  .filters{ position: static; }
+}
+
 /* ---------- Карточки видео ---------- */
 .video-card {
   background: var(--card);
@@ -494,20 +541,6 @@ button:hover {
   padding: 10px 12px;
   border-top: 1px solid var(--border);
   font-size: 14px
-}
-
-/* Правый блок внизу карточки (звёзды и т.п.) */
-.meta-right {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-
-/* Звёзды рейтинга */
-.stars {
-  font-size: 14px;
-  letter-spacing: 1px;
-  user-select: none;
 }
 
 /* Пустое состояние (когда фильтр/поиск ничего не вернул) */
@@ -677,7 +710,7 @@ select{
   }
 }
 
-/* ---------- Каталог видео: закладки и интерактивные звёзды ---------- */
+/* ---------- Каталог видео ---------- */
 
 /* Кнопка закладки на превью */
 .bookmark-btn{
@@ -703,37 +736,3 @@ select{
   background: rgba(59,109,141,.85);
   border-color: rgba(255,255,255,.85);
 }
-
-/* Управление звёздами */
-.stars-ctrl{
-  display:inline-flex;
-  align-items:center;
-  gap:2px;
-}
-.star-btn{
-  width:22px;
-  height:22px;
-  padding:0;
-  border:0;
-  background: transparent;
-  cursor:pointer;
-  opacity:.45;
-  line-height:1;
-  font-size:16px;
-}
-.star-btn.is-on{ opacity:.9; }
-.star-btn.is-mine{ opacity:1; }
-.star-btn:hover{ opacity:1; transform: translateY(-1px); }
-
-.star-clear{
-  width:22px;
-  height:22px;
-  padding:0;
-  border:0;
-  background: transparent;
-  cursor:pointer;
-  opacity:.55;
-  line-height:1;
-  font-size:14px;
-}
-.star-clear:hover{ opacity:1; }

@@ -3,10 +3,9 @@
 
   // -------------------- источники данных --------------------
   const CATALOG_URL = "data/videos_catalog.json";
-  const RATINGS_URL = "data/ratings_agg.json";
 
   // -------------------- локальные данные пользователя --------------------
-  const LS_PROGRESS = "video_progress_v1"; // { version, updatedAt, videos: { [id]: { state, bookmarked, myRating } } }
+  const LS_PROGRESS = "video_progress_v1"; // { version, updatedAt, videos: { [id]: { state, bookmarked } } }
 
   const PAGE_SIZE = 12;
 
@@ -20,18 +19,22 @@
     loadMore: document.getElementById("loadMoreBtn"),
     sentinel: document.getElementById("loadSentinel"),
     status: document.getElementById("statusLine"),
+
+    difficultyWrap: document.getElementById("difficultyFilters"),
+    difficultyChecks: Array.from(document.querySelectorAll(".diff-check")),
   };
 
   /** @type {Array<any>} */
   let catalog = [];
-  /** @type {Record<string, {sum:number,count:number}>} */
-  let ratingsAgg = {};
-  /** @type {{version:number, updatedAt:string, videos: Record<string, {state:number, bookmarked:number, myRating:number}>}} */
+  /** @type {{version:number, updatedAt:string, videos: Record<string, {state:number, bookmarked:number}>}} */
   let progress = loadProgress();
 
   let activeFilter = "new";
   let query = "";
   let cursor = 0;
+
+  // сложности, включённые в фильтр (1-3)
+  let activeDifficulties = new Set([1, 2, 3]);
 
   // -------------------- utils --------------------
 
@@ -78,7 +81,6 @@
     return {
       state: clamp(Number(row?.state) || 0, 0, 2),
       bookmarked: row?.bookmarked ? 1 : 0,
-      myRating: clamp(Number(row?.myRating) || 0, 0, 5),
     };
   }
 
@@ -123,51 +125,19 @@
     return "▯▯▯";
   }
 
-  function avgFrom(sum, count) {
-    if (!count) return 0;
-    return sum / count;
-  }
-
-  function effectiveAgg(videoId) {
-    const key = String(videoId);
-    const base = ratingsAgg[key] || { sum: 0, count: 0 };
-    const me = getUserRow(videoId).myRating;
-    if (me > 0) return { sum: base.sum + me, count: base.count + 1 };
-    return base;
-  }
-
-  function starsButtonsHTML(videoId, myRating, avg) {
-    const rounded = clamp(Math.round(avg), 0, 5);
-    const parts = [];
-    for (let i = 1; i <= 5; i++) {
-      const isOn = i <= rounded;
-      const isMine = i <= myRating && myRating > 0;
-      parts.push(
-        `<button class="star-btn ${isOn ? "is-on" : ""} ${isMine ? "is-mine" : ""}" ` +
-        `type="button" data-action="rate" data-id="${videoId}" data-star="${i}" ` +
-        `aria-label="Поставить ${i} звёзд">★</button>`
-      );
-    }
-    parts.push(
-      `<button class="star-clear" type="button" data-action="clear-rate" data-id="${videoId}" aria-label="Снять оценку">✕</button>`
-    );
-    return `<div class="stars-ctrl" title="Средняя оценка: ${avg.toFixed(2)}">${parts.join("")}</div>`;
-  }
-
   // -------------------- фильтры/поиск/сортировки --------------------
+  function applyDifficulty(list) {
+    if (!activeDifficulties || activeDifficulties.size === 0) return list;
+    return list.filter(v => activeDifficulties.has(clamp(Number(v.difficulty) || 1, 1, 3)));
+  }
 
   function enrich(video) {
     const user = getUserRow(video.id);
-    const eff = effectiveAgg(video.id);
-    const avg = avgFrom(eff.sum, eff.count);
 
     return {
       ...video,
       userState: user.state,
       userBookmarked: user.bookmarked,
-      userMyRating: user.myRating,
-      ratingAvg: avg,
-      ratingCount: eff.count,
     };
   }
 
@@ -177,7 +147,7 @@
     return list.filter(v => String(v.title || "").toLowerCase().includes(qq));
   }
 
-  function getFilterList(list, filter) {
+function getFilterList(list, filter) {
     const enriched = list.map(enrich);
 
     enriched.sort((a, b) => (parseDate(b.dateAdded) - parseDate(a.dateAdded)) || (b.id - a.id));
@@ -192,16 +162,6 @@
       return enriched.filter(v => Number(v.userBookmarked) === 1);
     }
 
-    if (filter === "trend") {
-      return enriched
-        .slice()
-        .sort((a, b) =>
-          (b.ratingAvg - a.ratingAvg) ||
-          (b.ratingCount - a.ratingCount) ||
-          (parseDate(b.dateAdded) - parseDate(a.dateAdded))
-        );
-    }
-
     return enriched;
   }
 
@@ -210,10 +170,9 @@
   function setCounters() {
     const base = catalog;
     const counts = {
-      new: getFilterList(base, "new").length,
-      trend: getFilterList(base, "trend").length,
-      starter: getFilterList(base, "starter").length,
-      fav: getFilterList(base, "fav").length,
+      new: applyDifficulty(getFilterList(base, "new")).length,
+      starter: applyDifficulty(getFilterList(base, "starter")).length,
+      fav: applyDifficulty(getFilterList(base, "fav")).length,
     };
 
     els.counters.forEach(el => {
@@ -229,9 +188,6 @@
     const state = clamp(Number(v.userState) || 0, 0, 2);
 
     const bookmarked = v.userBookmarked ? 1 : 0;
-    const myRating = clamp(Number(v.userMyRating) || 0, 0, 5);
-    const avg = Number(v.ratingAvg) || 0;
-    const count = Number(v.ratingCount) || 0;
 
     const href = `video.html?id=${encodeURIComponent(v.id)}`;
     const img = thumbUrl(v);
@@ -262,10 +218,6 @@
         <div class="meta-row">
           <div class="meta-left">
             <span class="metric" title="Прогресс">${progressGlyph(state)}</span>
-            <span class="muted" title="Оценок: ${count}">(${count})</span>
-          </div>
-          <div class="meta-right">
-            ${starsButtonsHTML(v.id, myRating, avg)}
           </div>
         </div>
       </article>
@@ -273,7 +225,7 @@
   }
 
   function render(reset = false) {
-    const base = getFilterList(catalog, activeFilter);
+    const base = applyDifficulty(getFilterList(catalog, activeFilter));
     const filtered = applySearch(base, query);
 
     if (reset) {
@@ -333,6 +285,25 @@
     syncSearchUI();
   }
 
+  function syncDifficultyFromUI(changedEl) {
+    if (!els.difficultyChecks || els.difficultyChecks.length === 0) {
+      activeDifficulties = new Set([1, 2, 3]);
+      return;
+    }
+
+    let selected = els.difficultyChecks
+      .filter(c => c.checked)
+      .map(c => clamp(Number(c.value) || 1, 1, 3));
+
+    // не даём снять все галочки (чтобы страница не выглядела "сломано")
+    if (selected.length === 0 && changedEl) {
+      changedEl.checked = true;
+      selected = [clamp(Number(changedEl.value) || 1, 1, 3)];
+    }
+
+    activeDifficulties = new Set(selected);
+  }
+
   function handleGridClick(e) {
     const btn = e.target.closest("button[data-action]");
     if (!btn) return;
@@ -351,24 +322,19 @@
       render(true);
       return;
     }
-
-    if (action === "rate") {
-      const star = clamp(Number(btn.getAttribute("data-star")) || 0, 1, 5);
-      setUserRow(videoId, { myRating: star });
-      setCounters();
-      render(true);
-      return;
-    }
-
-    if (action === "clear-rate") {
-      setUserRow(videoId, { myRating: 0 });
-      setCounters();
-      render(true);
-      return;
-    }
   }
 
   function bindEvents() {
+    // фильтр сложности
+    syncDifficultyFromUI();
+    els.difficultyChecks.forEach(chk => {
+      chk.addEventListener("change", () => {
+        syncDifficultyFromUI(chk);
+        setCounters();
+        render(true);
+      });
+    });
+
     els.tabs.forEach(t => {
       t.addEventListener("click", () => {
         setActiveTab(t.dataset.filter);
@@ -421,22 +387,13 @@
 
   async function init() {
     try {
-      const [resCat, resAgg] = await Promise.all([
-        fetch(CATALOG_URL, { cache: "no-store" }),
-        fetch(RATINGS_URL, { cache: "no-store" }),
-      ]);
-
+      const resCat = await fetch(CATALOG_URL, { cache: "no-store" });
       if (!resCat.ok) throw new Error(`Каталог: HTTP ${resCat.status}`);
-      if (!resAgg.ok) throw new Error(`Рейтинги: HTTP ${resAgg.status}`);
 
       const cat = await resCat.json();
-      const agg = await resAgg.json();
-
       if (!Array.isArray(cat)) throw new Error("videos_catalog.json должен быть массивом");
-      if (!agg || typeof agg !== "object") throw new Error("ratings_agg.json должен быть объектом");
 
       catalog = cat;
-      ratingsAgg = agg;
 
       progress = loadProgress();
 
@@ -450,8 +407,8 @@
         <div class="empty-state">
           <div class="empty-title">Ошибка загрузки каталога</div>
           <div class="muted">
-            Проверь пути и наличие файлов:
-            <b>${escapeHtml(CATALOG_URL)}</b> и <b>${escapeHtml(RATINGS_URL)}</b>.
+            Проверь путь и наличие файла:
+            <b>${escapeHtml(CATALOG_URL)}</b>.
           </div>
         </div>
       `;

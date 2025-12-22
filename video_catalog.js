@@ -19,7 +19,6 @@
     clearSearch: document.getElementById("clearSearchBtn"),
     loadMore: document.getElementById("loadMoreBtn"),
     sentinel: document.getElementById("loadSentinel"),
-    status: document.getElementById("statusLine"),
 
     // dropdown сложности
     diffDropdown: document.getElementById("diffDropdown"),
@@ -276,15 +275,11 @@
         </div>
       `;
       els.loadMore.style.display = "none";
-      els.status.textContent = "";
       return;
     }
 
     const hasMore = cursor < filtered.length;
     els.loadMore.style.display = hasMore ? "inline-flex" : "none";
-
-    const shown = Math.min(cursor, filtered.length);
-    els.status.textContent = `Показано ${shown} из ${filtered.length}`;
   }
 
   // -------------------- events --------------------
@@ -467,7 +462,6 @@
         </div>
       `;
       els.loadMore.style.display = "none";
-      els.status.textContent = "";
     }
   }
 

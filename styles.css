@@ -301,6 +301,7 @@ button:hover {
 }
 
 .search-clear{
+  margin-left: auto;
   width:32px;
   height:32px;
   border:0;
@@ -317,12 +318,9 @@ button:hover {
   pointer-events:auto;
 }
 
-.search-clear:hover{
-  background: rgba(0,0,0,.035);
-}
-
+.search-clear:hover,
 .search-clear:active{
-  background: rgba(0,0,0,.06);
+  background: transparent !important;
 }
 
 .search-ico,
@@ -340,14 +338,19 @@ button:hover {
 }
 
 .search input{
-  flex:1;
-  min-width:0;
-  border:0;
-  outline:0;
-  background:transparent;
-  padding:0;
-  height:100%;
-  font-size:16px;
+  -webkit-appearance: none;
+  appearance: none;
+  border: 0 !important;
+  outline: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0;
+  border-radius: 0 !important;
+  height: 100%;
+  flex: 1;
+  min-width: 0;
+  font-size: 16px;
 }
 
 

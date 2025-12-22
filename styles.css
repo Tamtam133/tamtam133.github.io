@@ -265,50 +265,72 @@ button:hover {
   letter-spacing: .2px
 }
 
-/* ---------- Панель инструментов ---------- */
-.toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: center;
-  justify-content: space-between;
-  margin: 12px 0 8px;
-
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  height: 44px;
-  padding: 0 12px;
-  box-sizing: border-box;
+/* ---------- Панель поиска ---------- */
+.toolbar{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:12px 0 8px;
+  height:44px;
+  padding:0 12px;
+  box-sizing:border-box;
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:999px;
 }
-
-
-.search{
-  display: flex;
-  align-items: center;
-  flex: 1 1 auto;
-  min-width: 0;
-  background: transparent;
-  border: 0;
-  padding: 0;
-  gap: 8px;
-}
-
 
 .toolbar:focus-within{
-  box-shadow: 0 0 0 2px rgba(59,109,141,.10);
-  border-color: rgba(59,109,141,.25);
+  box-shadow:0 0 0 2px rgba(59,109,141,.10);
+  border-color:rgba(59,109,141,.25);
+}
+
+.search{
+  display:flex;
+  align-items:center;
+  flex:1 1 auto;
+  min-width:0;
+  gap:8px;
+}
+
+.search-ico,
+.search-clear{
+  flex:0 0 auto;
+  display:inline-grid;
+  place-items:center;
+  color:#9aa0a6;
+}
+
+.search-ico svg,
+.search-clear svg{
+  display:block;
+  fill:currentColor;
+}
+
+.search-input{
+  flex:1;
+  min-width:0;
+  height:100%;
+  border:0;
+  outline:0;
+  background:transparent;
+  box-shadow:none;
+  padding:0;
+  margin:0;
+  font-size:16px;
+  -webkit-appearance:none;
+  appearance:none;
 }
 
 .search-clear{
-  margin-left: auto;
   width:32px;
   height:32px;
+  margin-left:auto;
   border:0;
   background:transparent;
   border-radius:999px;
   cursor:pointer;
-
   opacity:0;
   pointer-events:none;
 }
@@ -318,72 +340,36 @@ button:hover {
   pointer-events:auto;
 }
 
-.search-clear:hover,
-.search-clear:active{
-  background: transparent !important;
-}
-
-.search-ico,
-.search-clear{
-  color:#9aa0a6;
-  flex:0 0 auto;
-  display:inline-grid;
-  place-items:center;
-}
-
-.search-ico svg,
-.search-clear svg{
-  display:block;
-  fill: currentColor;
-}
-
-.search input{
-  -webkit-appearance: none;
-  appearance: none;
-  border: 0 !important;
-  outline: 0;
-  background: transparent !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  margin: 0;
-  border-radius: 0 !important;
-  height: 100%;
-  flex: 1;
-  min-width: 0;
-  font-size: 16px;
-}
-
-
 .toolbar-actions{
   display:flex;
-  gap:8px;
   align-items:center;
+  gap:8px;
 }
 
-.btn {
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: #fff;
-  padding: 10px 14px;
-  font-weight: 600;
-  cursor: pointer
+.btn{
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:#fff;
+  padding:10px 14px;
+  font-weight:600;
+  cursor:pointer;
 }
 
-.btn.primary {
-  background: var(--brand);
-  border-color: var(--brand);
-  color: #fff
+.btn.primary{
+  background:var(--brand);
+  border-color:var(--brand);
+  color:#fff;
 }
 
-.btn.ghost {
-  background: #fff
+.btn.ghost{
+  background:#fff;
 }
 
-.btn.link {
-  background: transparent;
-  border: 0;
-  color: var(--brand);
-  padding: 0
+.btn.link{
+  background:transparent;
+  border:0;
+  color:var(--brand);
+  padding:0;
 }
 
 /* ---------- Табы ---------- */

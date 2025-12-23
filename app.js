@@ -1,140 +1,192 @@
-// ---------- Константы и хранилище ----------
-const TEXT = "오늘 날씨가 아주 좋아요. 저는 커피를 마셔요. 공부합시다!";
-const LS_WORDS = "myWords";     // [{ word, ts, laps, nextAt }]
-const LS_META  = "siteMeta";    // { lastVisit: "YYYY-MM-DD", streak: number, addedToday: number }
-const LS_USER = "userProfile"; // { name: "Имя Фамилия" }
-const BASE_LIMIT = 10;
+(function () {
+  "use strict";
 
-function loadWords() {
-  try { return JSON.parse(localStorage.getItem(LS_WORDS)) || []; }
-  catch { return []; }
-}
-function saveWords(arr) {
-  localStorage.setItem(LS_WORDS, JSON.stringify(arr));
-}
+  // --- откуда берём данные ---
+  const CATALOG_URL = "data/videos_catalog.json";
 
-function loadMeta() {
-  try { return JSON.parse(localStorage.getItem(LS_META)) || {}; }
-  catch { return {}; }
-}
-function saveMeta(m) { localStorage.setItem(LS_META, JSON.stringify(m)); }
-function todayStr() { return new Date().toISOString().slice(0, 10); }
+  // --- пользовательские данные (закладки/прогресс) ---
+  const LS_PROGRESS = "video_progress_v1"; // { version, updatedAt, videos: { [id]: { state, bookmarked } } }
 
-// При открытии страницы — освежаем день/стрик
-function refreshDaily() {
-  const m = loadMeta();
-  const t = todayStr();
+  const els = {
+    track: document.getElementById("latestTrack"),
+    empty: document.getElementById("homeEmpty"),
+  };
 
-  if (!m.lastVisit) {
-    const init = { lastVisit: t, streak: 1, addedToday: 0 };
-    saveMeta(init);
-    return init;
-  }
-  if (m.lastVisit === t) return m;
+  // -------------------- utils --------------------
 
-  const prev = new Date(m.lastVisit);
-  const now  = new Date(t);
-  const diffDays = Math.round((now - prev) / (24 * 60 * 60 * 1000));
-
-  m.streak = diffDays === 1 ? (m.streak || 0) + 1 : 1;
-  m.lastVisit = t;
-  m.addedToday = 0;
-  saveMeta(m);
-  return m;
-}
-
-function getDailyLimit(meta) {
-  const bonus = Math.floor((meta.streak || 1) / 3) * 5; // каждые 3 дня стрика +5
-  return BASE_LIMIT + bonus;
-}
-
-// ---------- Логика добавления слова ----------
-function addWordWithRules(word) {
-  if (!word) return;
-
-  // лимит/стрик
-  const meta = refreshDaily();
-  const limit = getDailyLimit(meta);
-
-  if ((meta.addedToday || 0) >= limit) {
-    alert(`Лимит на сегодня исчерпан (${limit}). Приходи завтра! Стрик: ${meta.streak} дн.`);
-    return false;
+  function clamp(n, min, max) {
+    return Math.max(min, Math.min(max, n));
   }
 
-  // уникальность
-  const list = loadWords();
-  if (list.find(x => x.word === word)) return false;
+  function escapeHtml(str) {
+    return String(str)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
 
-  list.push({
-    word,
-    ts: Date.now(),
-    laps: 0,
-    nextAt: Date.now(), // для будущих карточек
-  });
-  saveWords(list);
+  function todayStr() {
+    return new Date().toISOString().slice(0, 10);
+  }
 
-  meta.addedToday = (meta.addedToday || 0) + 1;
-  saveMeta(meta);
+  function parseDate(dateStr) {
+    const t = Date.parse(dateStr);
+    return Number.isFinite(t) ? t : 0;
+  }
 
-  renderWordList();
-  renderMeta();
-  return true;
-}
-
-// ---------- Рендер текста и списка ----------
-function tokenizeKorean(text) {
-  // простой сплит: «слово»/«не-слово». Позже можно заменить на морфологию.
-  return text.split(/(\p{L}+)/gu).filter(Boolean);
-}
-
-function renderReader() {
-  const root = document.getElementById("reader");
-  root.innerHTML = "";
-
-  const current = loadWords().map(w => w.word);
-  tokenizeKorean(TEXT).forEach(tok => {
-    if (/\p{L}/u.test(tok)) {
-      const span = document.createElement("span");
-      span.textContent = tok;
-      span.className = "token";
-      if (current.includes(tok)) span.classList.add("added");
-
-      span.addEventListener("click", () => {
-        const added = addWordWithRules(tok);
-        if (added) span.classList.add("added");
-      });
-
-      root.appendChild(span);
-      root.append(" ");
-    } else {
-      root.append(tok);
+  function loadProgress() {
+    try {
+      const raw = localStorage.getItem(LS_PROGRESS);
+      if (!raw) return { version: 1, updatedAt: todayStr(), videos: {} };
+      const obj = JSON.parse(raw);
+      if (!obj || typeof obj !== "object") return { version: 1, updatedAt: todayStr(), videos: {} };
+      if (!obj.videos || typeof obj.videos !== "object") obj.videos = {};
+      if (!obj.version) obj.version = 1;
+      if (!obj.updatedAt) obj.updatedAt = todayStr();
+      return obj;
+    } catch {
+      return { version: 1, updatedAt: todayStr(), videos: {} };
     }
-  });
-}
+  }
 
-function renderWordList() {
-  const ul = document.getElementById("wordList");
-  ul.innerHTML = "";
+  function saveProgress(progress) {
+    progress.updatedAt = todayStr();
+    localStorage.setItem(LS_PROGRESS, JSON.stringify(progress));
+  }
 
-  const list = loadWords();
-  list.forEach(({ word }) => {
-    const li = document.createElement("li");
-    li.textContent = word;
-    ul.appendChild(li);
-  });
-}
+  function getUserRow(progress, videoId) {
+    const key = String(videoId);
+    const row = progress.videos[key];
+    return {
+      state: clamp(Number(row?.state) || 0, 0, 2),
+      bookmarked: row?.bookmarked ? 1 : 0,
+    };
+  }
 
-function renderMeta() {
-  const meta = refreshDaily();
-  const limit = getDailyLimit(meta);
-  const box = document.getElementById("meta");
-  box.innerHTML = `Стрик: <b>${meta.streak}</b> дней · Добавлено сегодня: <b>${meta.addedToday || 0}/${limit}</b>`;
-}
+  function setUserRow(progress, videoId, patch) {
+    const key = String(videoId);
+    const prev = getUserRow(progress, videoId);
+    progress.videos[key] = { ...prev, ...patch };
+    saveProgress(progress);
+  }
 
-// ---------- Инициализация ----------
-(function init() {
-  refreshDaily();   // актуализируем стрик/день
-  renderMeta();
-  renderReader();
-  renderWordList();
+  function enrich(progress, video) {
+    const user = getUserRow(progress, video.id);
+    return {
+      ...video,
+      userState: user.state,
+      userBookmarked: user.bookmarked,
+    };
+  }
+
+  function newestFirst(list) {
+    // Сортировка как в каталоге: dateAdded desc, потом id desc
+    return list.slice().sort((a, b) => (parseDate(b.dateAdded) - parseDate(a.dateAdded)) || ((b.id || 0) - (a.id || 0)));
+  }
+
+  // -------------------- rendering --------------------
+
+  function showEmpty(msgHtml) {
+    if (els.track) els.track.innerHTML = "";
+    if (els.empty) {
+      els.empty.style.display = "block";
+      if (msgHtml) {
+        els.empty.innerHTML = msgHtml;
+      }
+    }
+  }
+
+  function hideEmpty() {
+    if (els.empty) els.empty.style.display = "none";
+  }
+
+  function renderLatest(list) {
+    if (!els.track) return;
+
+    if (!list || list.length === 0) {
+      showEmpty();
+      return;
+    }
+
+    hideEmpty();
+    els.track.innerHTML = list.map(v => window.VideoCard.cardHTML(v)).join("");
+  }
+
+  // клики по закладкам внутри карточек
+  function handleTrackClick(progress, latestListRef, e) {
+    const btn = e.target.closest("button[data-action]");
+    if (!btn) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const action = btn.getAttribute("data-action");
+    const videoId = Number(btn.getAttribute("data-id"));
+    if (!videoId) return;
+
+    if (action === "bookmark") {
+      const row = getUserRow(progress, videoId);
+      setUserRow(progress, videoId, { bookmarked: row.bookmarked ? 0 : 1 });
+
+      // обновляем текущий массив и перерисовываем 8 карточек,
+      // чтобы иконка/aria-pressed сразу поменялись
+      const updated = latestListRef.map(v => enrich(progress, v));
+      renderLatest(updated);
+    }
+  }
+
+  // -------------------- init --------------------
+
+  async function init() {
+    if (!els.track) return;
+
+    if (!window.VideoCard || typeof window.VideoCard.cardHTML !== "function") {
+      showEmpty(`
+        <div class="empty-title">Ошибка</div>
+        <div class="muted">Не подключен <b>video_card.js</b> (VideoCard.cardHTML не найден).</div>
+      `);
+      return;
+    }
+
+    let catalog;
+    try {
+      const url = new URL(CATALOG_URL, window.location.href).toString();
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+
+      catalog = await res.json();
+      if (!Array.isArray(catalog)) throw new Error("videos_catalog.json должен быть массивом");
+    } catch (err) {
+      console.error("Каталог не загрузился:", err);
+      showEmpty(`
+        <div class="empty-title">Ошибка загрузки</div>
+        <div class="muted">
+          Не удалось загрузить <b>${escapeHtml(CATALOG_URL)}</b><br>
+          Причина: <b>${escapeHtml(err?.message || String(err))}</b>
+        </div>
+      `);
+      return;
+    }
+
+    const progress = loadProgress();
+
+    // берём 8 самых новых по dateAdded
+    const latestRaw = newestFirst(catalog).slice(0, 8);
+
+    // обогащаем пользовательскими данными (закладки)
+    const latest = latestRaw.map(v => enrich(progress, v));
+
+    renderLatest(latest);
+
+    // обработчик кликов по закладке
+    els.track.addEventListener("click", (e) => handleTrackClick(progress, latestRaw, e));
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
 })();

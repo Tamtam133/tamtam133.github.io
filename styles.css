@@ -315,7 +315,7 @@ a {
 }
 
 .tab {
-  padding: 12px 14px;
+  padding: 11px 14px;
   border: 1px solid var(--border);
   background: #fff;
   border-radius: var(--radius);
@@ -558,4 +558,43 @@ a {
   padding: 10px 14px;
   font-weight: 600;
   cursor: pointer;
+}
+
+/* ---------- Главная: слайдер последних видео ---------- */
+.carousel {
+  margin-top: 10px;
+}
+
+.carousel-track {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 2px 2px 12px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.carousel-track .video-card {
+  flex: 0 0 320px;
+  scroll-snap-align: start;
+}
+
+/* чуть приятнее скроллбар (не критично) */
+.carousel-track::-webkit-scrollbar {
+  height: 10px;
+}
+
+.carousel-track::-webkit-scrollbar-thumb {
+  background: #dfe3ea;
+  border-radius: 999px;
+}
+
+.carousel-track::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@media (max-width: 520px) {
+  .carousel-track .video-card {
+    flex-basis: 84vw;
+  }
 }

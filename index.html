@@ -4,8 +4,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Мой корейский — Видео</title>
+  <title>ОДИН ШАГ: КОРЕЙСКИЙ — Главная</title>
+
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="video_card.css" />
 </head>
 
 <body>
@@ -37,7 +39,7 @@
           </div>
 
           <div id="menuLinks">
-            <a href="index.html" role="menuitem">Текст</a>
+            <a href="index.html" role="menuitem">Главная</a>
             <a href="flashcards.html" role="menuitem">Карточки</a>
             <a href="video_catalog.html" role="menuitem">Видео</a>
             <hr>
@@ -55,87 +57,16 @@
   </header>
 
   <main class="container page">
+    <h2 class="page-title">Последние добавленные видео</h2>
+    <div class="muted" style="margin: 0 0 10px;">Листай влево/вправо — здесь только 8 самых новых.</div>
 
-    <h2 class="page-title">Каталог видео</h2>
-
-    <!-- Табы -->
-    <section class="tabs" role="tablist">
-      <button class="tab is-active" data-filter="new" role="tab">Новые <span class="counter">123</span></button>
-      <button class="tab" data-filter="trend" role="tab">Популярные <span class="counter">25</span></button>
-      <button class="tab" data-filter="starter" role="tab">Начатые вами <span class="counter">4</span></button>
-      <button class="tab" data-filter="fav" role="tab">Избранное <span class="counter">6</span></button>
+    <section class="carousel" aria-label="Последние 8 видео">
+      <div class="carousel-track" id="latestTrack" aria-live="polite"></div>
     </section>
 
-    <!-- Сетка карточек -->
-    <section class="grid" id="videoGrid">
-      <!-- Карточка -->
-      <article class="video-card" data-tags="new trend">
-        <a class="thumb" href="#" aria-label="Открыть видео">
-          <img src="https://picsum.photos/640/360?1" alt="" loading="lazy" />
-          <span class="chip top-right">77 фраз</span>
-          <span class="thumb-overlay"></span>
-          <span class="title">Отличия американской и британской систем образования. Часть 2</span>
-        </a>
-        <div class="meta-row">
-          <div class="meta-left">
-            <span class="metric" title="Просмотры/прогресс">▮▮▯</span>
-          </div>
-          <div class="meta-right">
-          </div>
-        </div>
-      </article>
-
-      <article class="video-card" data-tags="new starter">
-        <a class="thumb" href="#">
-          <img src="https://picsum.photos/640/360?2" alt="" loading="lazy" />
-          <span class="chip top-right">79 фраз</span>
-          <span class="thumb-overlay"></span>
-          <span class="title">Что сказать, если потерял мысль</span>
-        </a>
-        <div class="meta-row">
-          <div class="meta-left">
-            <span class="metric">▮▯▯</span>
-          </div>
-          <div class="meta-right">
-          </div>
-        </div>
-      </article>
-
-      <article class="video-card" data-tags="new fav">
-        <a class="thumb" href="#">
-          <img src="https://picsum.photos/640/360?3" alt="" loading="lazy" />
-          <span class="chip top-right">12 фраз</span>
-          <span class="thumb-overlay"></span>
-          <span class="title">Давай посчитаем!</span>
-        </a>
-        <div class="meta-row">
-          <div class="meta-left">
-            <span class="metric">▮▮▮</span>
-          </div>
-          <div class="meta-right">
-          </div>
-        </div>
-      </article>
-
-      <article class="video-card" data-tags="trend">
-        <a class="thumb" href="#">
-          <img src="https://picsum.photos/640/360?4" alt="" loading="lazy" />
-          <span class="chip top-right">34 фразы</span>
-          <span class="thumb-overlay"></span>
-          <span class="title">Интервью: любимые фильмы</span>
-        </a>
-        <div class="meta-row">
-          <div class="meta-left">
-            <span class="metric">▮▮▯</span>
-          </div>
-          <div class="meta-right">
-          </div>
-        </div>
-      </article>
-    </section>
-
-    <div class="more">
-      <a class="btn link">Показать все</a>
+    <div id="homeEmpty" class="empty-state" style="display:none; margin-top:14px;">
+      <div class="empty-title">Пока нет видео</div>
+      <div class="muted">Добавь записи в <b>data/videos_catalog.json</b> или проверь путь к файлу.</div>
     </div>
   </main>
 
@@ -145,30 +76,8 @@
     </div>
   </footer>
 
+  <script src="video_card.js" defer></script>
   <script src="app.js" defer></script>
-  <script>
-    // Простой фильтр по табам
-    const tabs = document.querySelectorAll('.tab');
-    const cards = document.querySelectorAll('.video-card');
-    tabs.forEach(t => t.addEventListener('click', () => {
-      tabs.forEach(x => x.classList.remove('is-active'));
-      t.classList.add('is-active');
-      const tag = t.dataset.filter;
-      cards.forEach(c => {
-        c.style.display = (tag === 'new') ? '' : (c.dataset.tags.includes(tag) ? '' : 'none');
-      });
-    }));
-
-    // Простой поиск по заголовку
-    const search = document.getElementById('videoSearch');
-    search.addEventListener('input', () => {
-      const q = search.value.trim().toLowerCase();
-      cards.forEach(c => {
-        const title = c.querySelector('.title').textContent.toLowerCase();
-        c.style.display = title.includes(q) ? '' : 'none';
-      });
-    });
-  </script>
   <script src="profile.js" defer></script>
 </body>
 

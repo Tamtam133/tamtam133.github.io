@@ -1,4 +1,5 @@
 const $ = (id) => document.getElementById(id);
+const CATALOG_URL = "data/videos_catalog.json";
 
 let ytPlayer = null;
 let playerReady = false;
@@ -924,6 +925,94 @@ function updateDisclaimerLink() {
     a.title = href;
 }
 
+function todayStr() {
+    return new Date().toISOString().slice(0, 10);
+}
+
+// необязательно, но приятно: сразу помечать видео как "начатое"
+function markVideoStarted(videoId) {
+    const LS_PROGRESS = "video_progress_v1"; // как в video_catalog.js
+    try {
+        const raw = localStorage.getItem(LS_PROGRESS);
+        const obj = raw ? JSON.parse(raw) : { version: 1, updatedAt: todayStr(), videos: {} };
+
+        if (!obj.videos || typeof obj.videos !== "object") obj.videos = {};
+        const key = String(videoId);
+        const prev = obj.videos[key] || { state: 0, bookmarked: 0 };
+
+        // state: 0=новое, 1=начатое, 2=пройдено (у тебя так же логика строится)
+        obj.videos[key] = { ...prev, state: Math.max(1, Number(prev.state) || 0) };
+        obj.updatedAt = todayStr();
+
+        localStorage.setItem(LS_PROGRESS, JSON.stringify(obj));
+    } catch (e) {
+        // молча игнорируем
+    }
+}
+
+// Ждём готовности YouTube-плеера, чтобы не ловить alert "плеер ещё не готов"
+function autoClickLoadWhenPlayerReady() {
+    const btn = document.getElementById("load");
+    if (!btn) return;
+
+    const tryStart = () => {
+        if (!playerReady) {
+            setTimeout(tryStart, 80);
+            return;
+        }
+        btn.click();
+    };
+
+    tryStart();
+}
+
+async function prefillFromQueryAndAutoload() {
+    const params = new URLSearchParams(window.location.search);
+
+    // 1) если вдруг решили передавать прямо ссылку: video.html?yt=...
+    const yt = params.get("yt") || params.get("url") || params.get("v");
+    if (yt) {
+        const input = document.getElementById("vid");
+        if (input) {
+            input.value = yt;
+            updateDisclaimerLink?.();
+            autoClickLoadWhenPlayerReady();
+        }
+        return;
+    }
+
+    // 2) основной вариант: video.html?id=123
+    const catalogId = params.get("id");
+    if (!catalogId) return;
+
+    try {
+        const url = new URL(CATALOG_URL, window.location.href).toString();
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+
+        const list = await res.json();
+        if (!Array.isArray(list)) throw new Error("videos_catalog.json должен быть массивом");
+
+        const item = list.find(v => String(v.id) === String(catalogId));
+        if (!item) return;
+
+        const input = document.getElementById("vid");
+        if (!input) return;
+
+        // В твоём каталоге поле похоже называется youtubeUrl (см. thumbUrl/getYoutubeId)
+        input.value = item.youtubeUrl || "";
+        updateDisclaimerLink?.();
+
+        // отмечаем как начатое (по желанию)
+        markVideoStarted(catalogId);
+
+        // автозапуск загрузки
+        if (input.value.trim()) autoClickLoadWhenPlayerReady();
+    } catch (err) {
+        console.warn("Не удалось автозагрузить видео из каталога:", err);
+    }
+}
+
 
 const tag = document.createElement("script");
 tag.src = "https://www.youtube.com/iframe_api";
@@ -979,7 +1068,7 @@ document.addEventListener("DOMContentLoaded", () => {
     updateDisclaimerLink();
     document.getElementById("vid")?.addEventListener("input", updateDisclaimerLink);
     document.getElementById("vid")?.addEventListener("change", updateDisclaimerLink);
-
+    prefillFromQueryAndAutoload();
 
     document.addEventListener("keydown", (e) => {
         if (!ratingModalOpen) return;

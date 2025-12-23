@@ -144,11 +144,13 @@
     const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const HOT_ZONE = 72;
-    const SPEED = 14;
-    const EPS = 2;
+    const MIN_SPEED = 4;
+    const MAX_SPEED = 22;
 
     let dir = 0;
+    let speed = 0;
     let raf = 0;
+
 
     function maxScroll() {
       return Math.max(0, track.scrollWidth - track.clientWidth);
@@ -172,6 +174,7 @@
 
     function stop() {
       dir = 0;
+      speed = 0;
       carousel.classList.remove("is-scroll-left", "is-scroll-right");
       if (raf) {
         cancelAnimationFrame(raf);
@@ -186,7 +189,7 @@
           return;
         }
 
-        track.scrollLeft += dir * SPEED;
+        track.scrollLeft += dir * speed;
         const { canLeft, canRight } = updateCanClasses();
 
         if ((dir < 0 && !canLeft) || (dir > 0 && !canRight)) {
@@ -198,12 +201,20 @@
       });
     }
 
-    function setDir(nextDir) {
-      if (reduceMotion) nextDir = 0;
+    function setDir(nextDir, nextSpeed) {
+      if (reduceMotion) {
+        nextDir = 0;
+        nextSpeed = 0;
+      }
 
-      if (nextDir === dir) return;
+      // если направление то же — просто обновим скорость и выйдем
+      if (nextDir === dir) {
+        speed = nextSpeed || 0;
+        return;
+      }
 
       dir = nextDir;
+      speed = nextSpeed || 0;
 
       carousel.classList.toggle("is-scroll-left", dir < 0);
       carousel.classList.toggle("is-scroll-right", dir > 0);
@@ -228,10 +239,30 @@
       const { canLeft, canRight } = updateCanClasses();
 
       let next = 0;
-      if (x < HOT_ZONE && canLeft) next = -1;
-      else if (x > rect.width - HOT_ZONE && canRight) next = 1;
+      let nextSpeed = 0;
 
-      setDir(next);
+      // слева
+      if (x < HOT_ZONE && canLeft) {
+        next = -1;
+
+        // dist = насколько курсор далеко от самого края (0..HOT_ZONE)
+        const dist = x;
+        const t = 1 - clamp(dist / HOT_ZONE, 0, 1); // 0..1, где 1 = у самого края
+        const k = t * t; // квадратичная кривая (мягко стартует, быстрее у края)
+        nextSpeed = MIN_SPEED + (MAX_SPEED - MIN_SPEED) * k;
+      }
+      // справа
+      else if (x > rect.width - HOT_ZONE && canRight) {
+        next = 1;
+
+        const dist = rect.width - x;
+        const t = 1 - clamp(dist / HOT_ZONE, 0, 1);
+        const k = t * t;
+        nextSpeed = MIN_SPEED + (MAX_SPEED - MIN_SPEED) * k;
+      }
+
+      setDir(next, nextSpeed);
+
     }
 
     track.addEventListener("pointerenter", updateCanClasses);

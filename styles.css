@@ -569,7 +569,7 @@ a {
   display: flex;
   gap: 16px;
   overflow-x: auto;
-  padding: 2px 2px 12px;
+  padding: 2px 2px 6px;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
 }
@@ -579,18 +579,22 @@ a {
   scroll-snap-align: start;
 }
 
+/* прячем scrollbar (Chrome/Safari/Edge) */
 .carousel-track::-webkit-scrollbar {
-  height: 10px;
+  width: 0;
+  height: 0;
 }
 
-.carousel-track::-webkit-scrollbar-thumb {
-  background: #dfe3ea;
-  border-radius: 999px;
+/* Firefox */
+.carousel-track {
+  scrollbar-width: none;
 }
 
-.carousel-track::-webkit-scrollbar-track {
-  background: transparent;
+/* старый Edge/IE (на всякий) */
+.carousel-track {
+  -ms-overflow-style: none;
 }
+
 
 @media (max-width: 520px) {
   .carousel-track .video-card {
@@ -634,7 +638,7 @@ a {
   border-radius: 999px;
   background: rgba(255, 255, 255, .92);
   border: 1px solid var(--border);
-  box-shadow: 0 10px 26px rgba(0, 0, 0, .12);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, .10);
   display: grid;
   place-items: center;
   opacity: 0;
@@ -678,6 +682,7 @@ a {
 }
 
 @media (hover: none) {
+
   .carousel-edge,
   .carousel-hint {
     display: none;

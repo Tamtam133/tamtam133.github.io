@@ -307,19 +307,6 @@ function setupHoverAutoScroll(track, carousel) {
     { passive: true }
   );
 
-
-  track.addEventListener(
-    "scroll",
-    () => {
-      updateCanClasses();
-      const max = maxScroll();
-      if ((dir < 0 && track.scrollLeft <= EPS) || (dir > 0 && track.scrollLeft >= max - EPS)) {
-        stop();
-      }
-    },
-    { passive: true }
-  );
-
   window.addEventListener("resize", updateCanClasses);
 
   updateCanClasses();

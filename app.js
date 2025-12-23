@@ -138,150 +138,180 @@
 
   // -------------------- carousel auto-scroll (hover edges) --------------------
 
-  function setupHoverAutoScroll(track, carousel) {
-    if (!track || !carousel) return;
+function setupHoverAutoScroll(track, carousel) {
+  if (!track || !carousel) return;
 
-    const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const prefersReduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    const HOT_ZONE = 72;
-    const MIN_SPEED = 4;
-    const MAX_SPEED = 22;
-    const EPS = 2;
+  const HOT_ZONE = 72;     // ширина “горячей зоны” у края
+  const EPS = 2;
 
-    let dir = 0;
-    let speed = 0;
-    let raf = 0;
+  // скорость в px/сек (так стабильнее на мониторах 60/120/144Hz)
+  const MIN_V = prefersReduce ? 160 : 320;
+  const MAX_V = prefersReduce ? 520 : 1400;
 
+  let dir = 0;        // -1 / 0 / 1
+  let vel = 0;        // px/sec
+  let raf = 0;
+  let lastT = 0;
 
-    function maxScroll() {
-      return Math.max(0, track.scrollWidth - track.clientWidth);
+  // чтобы scroll-snap не “подтягивал назад” во время автоскролла
+  let snapWasDisabled = false;
+
+  function clamp(n, min, max) {
+    return Math.max(min, Math.min(max, n));
+  }
+
+  function maxScroll() {
+    return Math.max(0, track.scrollWidth - track.clientWidth);
+  }
+
+  function updateCanClasses() {
+    const max = maxScroll();
+    const left = track.scrollLeft;
+
+    const canLeft = left > EPS;
+    const canRight = left < (max - EPS);
+
+    carousel.classList.toggle("can-left", canLeft);
+    carousel.classList.toggle("can-right", canRight);
+
+    if (!canLeft) carousel.classList.remove("is-scroll-left");
+    if (!canRight) carousel.classList.remove("is-scroll-right");
+
+    return { canLeft, canRight };
+  }
+
+  function disableSnap(disable) {
+    if (disable && !snapWasDisabled) {
+      // отключаем снап только на время автоскролла
+      track.style.scrollSnapType = "none";
+      snapWasDisabled = true;
+    } else if (!disable && snapWasDisabled) {
+      // возвращаем как было (из CSS)
+      track.style.scrollSnapType = "";
+      snapWasDisabled = false;
+    }
+  }
+
+  function stop() {
+    dir = 0;
+    vel = 0;
+    lastT = 0;
+
+    carousel.classList.remove("is-scroll-left", "is-scroll-right");
+
+    disableSnap(false);
+
+    if (raf) {
+      cancelAnimationFrame(raf);
+      raf = 0;
+    }
+  }
+
+  function tick(t) {
+    if (!dir) {
+      raf = 0;
+      return;
     }
 
-    function updateCanClasses() {
-      const max = maxScroll();
-      const left = track.scrollLeft;
+    if (!lastT) lastT = t;
+    const dt = Math.min(32, t - lastT); // ограничим шаг времени (на всякий)
+    lastT = t;
 
-      const canLeft = left > EPS;
-      const canRight = left < (max - EPS);
+    track.scrollLeft += dir * vel * (dt / 1000);
 
-      carousel.classList.toggle("can-left", canLeft);
-      carousel.classList.toggle("can-right", canRight);
+    const { canLeft, canRight } = updateCanClasses();
 
-      if (!canLeft) carousel.classList.remove("is-scroll-left");
-      if (!canRight) carousel.classList.remove("is-scroll-right");
-
-      return { canLeft, canRight };
+    if ((dir < 0 && !canLeft) || (dir > 0 && !canRight)) {
+      stop();
+      return;
     }
 
-    function stop() {
-      dir = 0;
-      speed = 0;
-      carousel.classList.remove("is-scroll-left", "is-scroll-right");
-      if (raf) {
-        cancelAnimationFrame(raf);
-        raf = 0;
-      }
+    raf = requestAnimationFrame(tick);
+  }
+
+  function setDir(nextDir, nextVel) {
+    if (!nextDir) {
+      stop();
+      return;
     }
 
-    function tick() {
-      raf = requestAnimationFrame(() => {
-        if (!dir) {
-          raf = 0;
-          return;
-        }
+    dir = nextDir;
+    vel = nextVel || 0;
 
-        track.scrollLeft += dir * speed;
-        const { canLeft, canRight } = updateCanClasses();
+    disableSnap(true);
 
-        if ((dir < 0 && !canLeft) || (dir > 0 && !canRight)) {
-          stop();
-          return;
-        }
+    carousel.classList.toggle("is-scroll-left", dir < 0);
+    carousel.classList.toggle("is-scroll-right", dir > 0);
 
-        tick();
-      });
+    if (!raf) raf = requestAnimationFrame(tick);
+  }
+
+  function handleMove(clientX) {
+    const rect = track.getBoundingClientRect();
+    const x = clientX - rect.left;
+
+    const { canLeft, canRight } = updateCanClasses();
+
+    let nextDir = 0;
+    let nextVel = 0;
+
+    if (x < HOT_ZONE && canLeft) {
+      nextDir = -1;
+      const dist = x; // 0..HOT_ZONE
+      const t = 1 - clamp(dist / HOT_ZONE, 0, 1);
+      const k = t * t;
+      nextVel = MIN_V + (MAX_V - MIN_V) * k;
+    } else if (x > rect.width - HOT_ZONE && canRight) {
+      nextDir = 1;
+      const dist = rect.width - x;
+      const t = 1 - clamp(dist / HOT_ZONE, 0, 1);
+      const k = t * t;
+      nextVel = MIN_V + (MAX_V - MIN_V) * k;
     }
 
-    function setDir(nextDir, nextSpeed) {
-      if (reduceMotion) {
-        nextDir = 0;
-        nextSpeed = 0;
-      }
+    setDir(nextDir, nextVel);
+  }
 
-      if (nextDir === dir) {
-        speed = nextSpeed || 0;
-        if (dir && !raf) tick();
-        return;
-      }
+  // pointer events (основной путь)
+  function onPointerMove(e) {
+    if (e.pointerType && e.pointerType !== "mouse") return;
+    handleMove(e.clientX);
+  }
 
-      dir = nextDir;
-      speed = nextSpeed || 0;
+  // fallback на случай странностей с pointer events
+  function onMouseMove(e) {
+    handleMove(e.clientX);
+  }
 
-      carousel.classList.toggle("is-scroll-left", dir < 0);
-      carousel.classList.toggle("is-scroll-right", dir > 0);
+  // небольшая подсказка браузеру для тач-устройств (не мешает мыши)
+  track.style.touchAction = "pan-y";
 
-      if (!dir) {
-        if (raf) {
-          cancelAnimationFrame(raf);
-          raf = 0;
-        }
-        return;
-      }
+  track.addEventListener("pointerenter", updateCanClasses);
+  track.addEventListener("pointermove", onPointerMove);
+  track.addEventListener("pointerleave", stop);
 
-      if (!raf) tick();
-    }
+  track.addEventListener("mouseenter", updateCanClasses);
+  track.addEventListener("mousemove", onMouseMove);
+  track.addEventListener("mouseleave", stop);
 
-    function handlePointerMove(e) {
-      if (e.pointerType && e.pointerType !== "mouse") return;
-
-      const rect = track.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-
-      const { canLeft, canRight } = updateCanClasses();
-
-      let next = 0;
-      let nextSpeed = 0;
-
-      // слева
-      if (x < HOT_ZONE && canLeft) {
-        next = -1;
-
-        // dist = насколько курсор далеко от самого края (0..HOT_ZONE)
-        const dist = x;
-        const t = 1 - clamp(dist / HOT_ZONE, 0, 1); // 0..1, где 1 = у самого края
-        const k = t * t; // квадратичная кривая (мягко стартует, быстрее у края)
-        nextSpeed = MIN_SPEED + (MAX_SPEED - MIN_SPEED) * k;
-      }
-      // справа
-      else if (x > rect.width - HOT_ZONE && canRight) {
-        next = 1;
-
-        const dist = rect.width - x;
-        const t = 1 - clamp(dist / HOT_ZONE, 0, 1);
-        const k = t * t;
-        nextSpeed = MIN_SPEED + (MAX_SPEED - MIN_SPEED) * k;
-      }
-
-      setDir(next, nextSpeed);
-
-    }
-
-    track.addEventListener("pointerenter", updateCanClasses);
-    track.addEventListener("pointermove", handlePointerMove);
-    track.addEventListener("pointerleave", stop);
-
-    track.addEventListener("scroll", () => {
+  track.addEventListener(
+    "scroll",
+    () => {
       updateCanClasses();
       const max = maxScroll();
       if ((dir < 0 && track.scrollLeft <= EPS) || (dir > 0 && track.scrollLeft >= max - EPS)) {
         stop();
       }
-    }, { passive: true });
+    },
+    { passive: true }
+  );
 
-    window.addEventListener("resize", updateCanClasses);
+  window.addEventListener("resize", updateCanClasses);
 
-    updateCanClasses();
-  }
+  updateCanClasses();
+}
 
   // -------------------- init --------------------
 

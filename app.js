@@ -285,16 +285,28 @@ function setupHoverAutoScroll(track, carousel) {
     handleMove(e.clientX);
   }
 
-  // небольшая подсказка браузеру для тач-устройств (не мешает мыши)
-  track.style.touchAction = "pan-y";
+  carousel.style.touchAction = "pan-y";
 
-  track.addEventListener("pointerenter", updateCanClasses);
-  track.addEventListener("pointermove", onPointerMove);
-  track.addEventListener("pointerleave", stop);
+  carousel.addEventListener("pointerenter", updateCanClasses);
+  carousel.addEventListener("pointermove", onPointerMove);
+  carousel.addEventListener("pointerleave", stop);
 
-  track.addEventListener("mouseenter", updateCanClasses);
-  track.addEventListener("mousemove", onMouseMove);
-  track.addEventListener("mouseleave", stop);
+  carousel.addEventListener("mouseenter", updateCanClasses);
+  carousel.addEventListener("mousemove", onMouseMove);
+  carousel.addEventListener("mouseleave", stop);
+
+  track.addEventListener(
+    "scroll",
+    () => {
+      updateCanClasses();
+      const max = maxScroll();
+      if ((dir < 0 && track.scrollLeft <= EPS) || (dir > 0 && track.scrollLeft >= max - EPS)) {
+        stop();
+      }
+    },
+    { passive: true }
+  );
+
 
   track.addEventListener(
     "scroll",

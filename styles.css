@@ -676,15 +676,18 @@ a {
   transform: translateY(-50%) scale(1);
 }
 
-.carousel.can-left:hover .carousel-track,
-.carousel.can-right:hover .carousel-track {
-  cursor: ew-resize;
-}
-
 @media (hover: none) {
 
   .carousel-edge,
   .carousel-hint {
     display: none;
   }
+}
+
+#latestTrack {
+  scroll-snap-type: none;
+}
+
+#latestTrack .video-card {
+  scroll-snap-align: none;
 }

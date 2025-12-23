@@ -1,4 +1,5 @@
 const $ = (id) => document.getElementById(id);
+const LS_META = "site_meta_v1";
 
 // ---------- Метаданные/стрик ----------
 function loadMeta() {

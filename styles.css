@@ -583,7 +583,7 @@ a {
 .carousel {
   margin-top: 10px;
   overflow: hidden;
-  border-radius: 18px;
+  border-radius: 10px;
 }
 
 .carousel-track {

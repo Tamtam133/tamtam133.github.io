@@ -19,7 +19,16 @@
     --puzzle-gap: 12px;
 }
 
+.card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+    margin: 16px 0;
+    background: var(--card);
+}
+
 /* ===== Видео-сцена ===== */
+
 .player-container {
     position: relative;
     width: 640px;
@@ -469,127 +478,127 @@
 }
 
 /* ===== Оверлей завершения на видео ===== */
-.finish-overlay{
-  position: absolute;
-  inset: -1px;
-  z-index: 20;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  box-sizing: border-box;
+.finish-overlay {
+    position: absolute;
+    inset: -1px;
+    z-index: 20;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    box-sizing: border-box;
 
-  border-radius: calc(var(--r-3) + 1px);
+    border-radius: calc(var(--r-3) + 1px);
 
-  background-image: url("images/video_back.png");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+    background-image: url("images/video_back.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 
-  pointer-events: auto;
+    pointer-events: auto;
 }
 
 /* показ оверлея */
-.finish-overlay[aria-hidden="false"]{
-  display: flex;
+.finish-overlay[aria-hidden="false"] {
+    display: flex;
 }
 
 /* контейнер для твоего блока кнопок */
-.finish-overlay-inner{
-  width: min(520px, 92vw);
-  background: rgba(255,255,255,0.92);
-  border: 1px solid rgba(0,0,0,0.10);
-  border-radius: var(--r-3);
-  padding: 18px 18px 16px;
-  box-shadow: 0 12px 38px rgba(0,0,0,0.25);
-  text-align: center;
+.finish-overlay-inner {
+    width: min(520px, 92vw);
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(0, 0, 0, 0.10);
+    border-radius: var(--r-3);
+    padding: 18px 18px 16px;
+    box-shadow: 0 12px 38px rgba(0, 0, 0, 0.25);
+    text-align: center;
 }
 
 /* ===== Иконка дисклеймера над видео ===== */
 .player-help {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  z-index: 30;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 30;
 }
 
 .help-ic {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
 
-  border: none;
-  background: rgba(255,255,255,0.78);
+    border: none;
+    background: rgba(255, 255, 255, 0.78);
 
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 
-  cursor: help;
-  padding: 0;
+    cursor: help;
+    padding: 0;
 }
 
 .help-ic svg {
-  width: 20px;
-  height: 20px;
-  fill: #c62828;
+    width: 20px;
+    height: 20px;
+    fill: #c62828;
 }
 
 .help-ic:hover {
-  background: rgba(255,255,255,0.92);
+    background: rgba(255, 255, 255, 0.92);
 }
 
 .help-ic:focus-visible {
-  outline: 2px solid rgba(59,109,141,0.65);
-  outline-offset: 2px;
+    outline: 2px solid rgba(59, 109, 141, 0.65);
+    outline-offset: 2px;
 }
 
 .help-tip {
-  position: absolute;
-  top: 40px;
-  left: 0;
-  right: auto;
+    position: absolute;
+    top: 40px;
+    left: 0;
+    right: auto;
 
-  width: min(320px, calc(100vw - 40px));
-  padding: 12px 12px;
+    width: min(320px, calc(100vw - 40px));
+    padding: 12px 12px;
 
-  border-radius: 12px;
-  background: #fff;
-  border: 1px solid rgba(0,0,0,0.12);
-  box-shadow: 0 10px 28px rgba(0,0,0,0.18);
+    border-radius: 12px;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
 
-  display: none;
+    display: none;
 }
 
 .player-help:hover .help-tip,
 .player-help:focus-within .help-tip {
-  display: block;
+    display: block;
 }
 
 .help-tip::before {
-  content: "";
-  position: absolute;
-  top: -6px;
-  left: 12px;
-  width: 12px;
-  height: 12px;
-  background: #fff;
-  border-left: 1px solid rgba(0,0,0,0.12);
-  border-top: 1px solid rgba(0,0,0,0.12);
-  transform: rotate(45deg);
+    content: "";
+    position: absolute;
+    top: -6px;
+    left: 12px;
+    width: 12px;
+    height: 12px;
+    background: #fff;
+    border-left: 1px solid rgba(0, 0, 0, 0.12);
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+    transform: rotate(45deg);
 }
 
-.help-tip a.help-link{
-  color: #3B6D8D;
-  text-decoration: underline;
-  font-weight: 700;
+.help-tip a.help-link {
+    color: #3B6D8D;
+    text-decoration: underline;
+    font-weight: 700;
 }
 
-.help-tip a.help-link:hover{
-  color: #2f5d78;
-  text-decoration: none;
+.help-tip a.help-link:hover {
+    color: #2f5d78;
+    text-decoration: none;
 }
 
-.help-tip a.help-link:visited{
-  color: #3B6D8D;
+.help-tip a.help-link:visited {
+    color: #3B6D8D;
 }

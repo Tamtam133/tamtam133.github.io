@@ -560,6 +560,13 @@ a {
   cursor: pointer;
 }
 
+.btn.link {
+  background: transparent;
+  border: 0;
+  color: var(--brand);
+  padding: 0
+}
+
 /* ---------- Главная: слайдер последних видео ---------- */
 .carousel {
   margin-top: 10px;

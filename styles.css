@@ -579,7 +579,6 @@ a {
   scroll-snap-align: start;
 }
 
-/* чуть приятнее скроллбар (не критично) */
 .carousel-track::-webkit-scrollbar {
   height: 10px;
 }
@@ -596,5 +595,91 @@ a {
 @media (max-width: 520px) {
   .carousel-track .video-card {
     flex-basis: 84vw;
+  }
+}
+
+/* ---------- Главная: умный слайдер (автоскролл при наведении на край) ---------- */
+
+.carousel {
+  position: relative;
+}
+
+.carousel-edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 64px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .15s ease;
+  z-index: 4;
+}
+
+.carousel-edge.left {
+  left: 0;
+  background: linear-gradient(90deg, var(--bg), rgba(246, 247, 251, 0));
+}
+
+.carousel-edge.right {
+  right: 0;
+  background: linear-gradient(270deg, var(--bg), rgba(246, 247, 251, 0));
+}
+
+.carousel-hint {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%) scale(.96);
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .92);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, .12);
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  transition: opacity .12s ease, transform .12s ease;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.carousel-hint svg {
+  fill: #374151;
+  display: block;
+}
+
+.carousel-hint.left {
+  left: 8px;
+}
+
+.carousel-hint.right {
+  right: 8px;
+}
+
+.carousel.can-left:hover .carousel-edge.left,
+.carousel.can-right:hover .carousel-edge.right {
+  opacity: 1;
+}
+
+.carousel.can-left:hover .carousel-hint.left,
+.carousel.can-right:hover .carousel-hint.right {
+  opacity: .35;
+}
+
+.carousel.is-scroll-left .carousel-hint.left,
+.carousel.is-scroll-right .carousel-hint.right {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
+}
+
+.carousel.can-left:hover .carousel-track,
+.carousel.can-right:hover .carousel-track {
+  cursor: ew-resize;
+}
+
+@media (hover: none) {
+  .carousel-edge,
+  .carousel-hint {
+    display: none;
   }
 }

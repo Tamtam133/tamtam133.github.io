@@ -10,7 +10,9 @@
   const els = {
     track: document.getElementById("latestTrack"),
     empty: document.getElementById("homeEmpty"),
+    carousel: document.getElementById("latestCarousel"),
   };
+
 
   // -------------------- utils --------------------
 
@@ -114,7 +116,6 @@
     els.track.innerHTML = list.map(v => window.VideoCard.cardHTML(v)).join("");
   }
 
-  // клики по закладкам внутри карточек
   function handleTrackClick(progress, latestListRef, e) {
     const btn = e.target.closest("button[data-action]");
     if (!btn) return;
@@ -130,11 +131,124 @@
       const row = getUserRow(progress, videoId);
       setUserRow(progress, videoId, { bookmarked: row.bookmarked ? 0 : 1 });
 
-      // обновляем текущий массив и перерисовываем 8 карточек,
-      // чтобы иконка/aria-pressed сразу поменялись
       const updated = latestListRef.map(v => enrich(progress, v));
       renderLatest(updated);
     }
+  }
+
+  // -------------------- carousel auto-scroll (hover edges) --------------------
+
+  function setupHoverAutoScroll(track, carousel) {
+    if (!track || !carousel) return;
+
+    const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const HOT_ZONE = 72;
+    const SPEED = 14;
+    const EPS = 2;
+
+    let dir = 0;
+    let raf = 0;
+
+    function maxScroll() {
+      return Math.max(0, track.scrollWidth - track.clientWidth);
+    }
+
+    function updateCanClasses() {
+      const max = maxScroll();
+      const left = track.scrollLeft;
+
+      const canLeft = left > EPS;
+      const canRight = left < (max - EPS);
+
+      carousel.classList.toggle("can-left", canLeft);
+      carousel.classList.toggle("can-right", canRight);
+
+      if (!canLeft) carousel.classList.remove("is-scroll-left");
+      if (!canRight) carousel.classList.remove("is-scroll-right");
+
+      return { canLeft, canRight };
+    }
+
+    function stop() {
+      dir = 0;
+      carousel.classList.remove("is-scroll-left", "is-scroll-right");
+      if (raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    }
+
+    function tick() {
+      raf = requestAnimationFrame(() => {
+        if (!dir) {
+          raf = 0;
+          return;
+        }
+
+        track.scrollLeft += dir * SPEED;
+        const { canLeft, canRight } = updateCanClasses();
+
+        if ((dir < 0 && !canLeft) || (dir > 0 && !canRight)) {
+          stop();
+          return;
+        }
+
+        tick();
+      });
+    }
+
+    function setDir(nextDir) {
+      if (reduceMotion) nextDir = 0;
+
+      if (nextDir === dir) return;
+
+      dir = nextDir;
+
+      carousel.classList.toggle("is-scroll-left", dir < 0);
+      carousel.classList.toggle("is-scroll-right", dir > 0);
+
+      if (!dir) {
+        if (raf) {
+          cancelAnimationFrame(raf);
+          raf = 0;
+        }
+        return;
+      }
+
+      if (!raf) tick();
+    }
+
+    function handlePointerMove(e) {
+      if (e.pointerType && e.pointerType !== "mouse") return;
+
+      const rect = track.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+
+      const { canLeft, canRight } = updateCanClasses();
+
+      let next = 0;
+      if (x < HOT_ZONE && canLeft) next = -1;
+      else if (x > rect.width - HOT_ZONE && canRight) next = 1;
+
+      setDir(next);
+    }
+
+    track.addEventListener("pointerenter", updateCanClasses);
+    track.addEventListener("pointermove", handlePointerMove);
+    track.addEventListener("pointerleave", stop);
+
+    track.addEventListener("scroll", () => {
+      updateCanClasses();
+      const max = maxScroll();
+      if ((dir < 0 && track.scrollLeft <= EPS) || (dir > 0 && track.scrollLeft >= max - EPS)) {
+        stop();
+      }
+    }, { passive: true });
+
+    window.addEventListener("resize", updateCanClasses);
+
+    updateCanClasses();
   }
 
   // -------------------- init --------------------
@@ -172,15 +286,14 @@
 
     const progress = loadProgress();
 
-    // берём 8 самых новых по dateAdded
     const latestRaw = newestFirst(catalog).slice(0, 8);
 
-    // обогащаем пользовательскими данными (закладки)
     const latest = latestRaw.map(v => enrich(progress, v));
 
     renderLatest(latest);
 
-    // обработчик кликов по закладке
+    setupHoverAutoScroll(els.track, els.carousel);
+
     els.track.addEventListener("click", (e) => handleTrackClick(progress, latestRaw, e));
   }
 

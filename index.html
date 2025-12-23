@@ -60,9 +60,27 @@
     <h2 class="page-title">Последние добавленные видео</h2>
     <div class="muted" style="margin: 0 0 10px;">Листай влево/вправо — здесь только 8 самых новых.</div>
 
-    <section class="carousel" aria-label="Последние 8 видео">
+    <section class="carousel" id="latestCarousel" aria-label="Последние 8 видео">
+      <!-- затемнение по краям (подсказка что есть прокрутка) -->
+      <div class="carousel-edge left" aria-hidden="true"></div>
+      <div class="carousel-edge right" aria-hidden="true"></div>
+
+      <!-- стрелочки (появляются когда можно/нужно скроллить) -->
+      <div class="carousel-hint left" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22">
+          <path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path>
+        </svg>
+      </div>
+
+      <div class="carousel-hint right" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22">
+          <path d="m8.59 16.59 1.41 1.41 6-6-6-6-1.41 1.41L13.17 12z"></path>
+        </svg>
+      </div>
+
       <div class="carousel-track" id="latestTrack" aria-live="polite"></div>
     </section>
+
 
     <div id="homeEmpty" class="empty-state" style="display:none; margin-top:14px;">
       <div class="empty-title">Пока нет видео</div>

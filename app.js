@@ -146,6 +146,7 @@
     const HOT_ZONE = 72;
     const MIN_SPEED = 4;
     const MAX_SPEED = 22;
+    const EPS = 2;
 
     let dir = 0;
     let speed = 0;
@@ -207,9 +208,9 @@
         nextSpeed = 0;
       }
 
-      // если направление то же — просто обновим скорость и выйдем
       if (nextDir === dir) {
         speed = nextSpeed || 0;
+        if (dir && !raf) tick();
         return;
       }
 

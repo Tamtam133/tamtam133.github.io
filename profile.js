@@ -115,7 +115,6 @@
         if (btn) {
             btn.addEventListener("click", toggleMenu);
         }
-
         setupDismiss();
         hydrateProfile();
     }

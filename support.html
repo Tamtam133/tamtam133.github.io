@@ -1,187 +1,187 @@
 <!doctype html>
 <html lang="ru">
+
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ОДИН ШАГ: КОРЕЙСКИЙ — Поддержать</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ОДИН ШАГ: КОРЕЙСКИЙ — Поддержать</title>
 
-  <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css" />
 
-  <!-- Небольшие стили только для этой страницы (чтобы не трогать общий styles.css) -->
-  <style>
-    .support-wrap {
-      max-width: 860px;
-      margin: 0 auto;
-    }
+    <!-- Небольшие стили только для этой страницы (чтобы не трогать общий styles.css) -->
+    <style>
+        .support-wrap {
+            max-width: 860px;
+            margin: 0 auto;
+        }
 
-    /* Вводный текст теперь будет внутри карточки */
-    .support-lead {
-      margin: 8px 0 0;
-      line-height: 1.5;
-    }
+        /* Вводный текст теперь будет внутри карточки */
+        .support-lead {
+            margin: 8px 0 0;
+            line-height: 1.5;
+        }
 
-    .support-card .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 220px;
-      gap: 10px;
-      padding: 12px 16px;
-      border-radius: 14px;
-      font-weight: 700;
-    }
+        .support-card .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 220px;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-weight: 700;
+            overflow: visible;
+        }
 
-    .support-card .btn:hover {
-      box-shadow: var(--shadow);
-      transform: translateY(-1px);
-    }
+        .support-card .btn:hover {
+            box-shadow: var(--shadow);
+            transform: translateY(-1px);
+        }
 
-    .support-card .btn:active {
-      transform: translateY(0px);
-    }
+        .support-card .btn:active {
+            transform: translateY(0px);
+        }
 
-    .support-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 32px;
-      justify-content: center;
-      margin-top: 14px;
-    }
+        .support-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 32px;
+            justify-content: center;
+            margin-top: 14px;
+        }
 
-    .support-note {
-      margin-top: 12px;
-      font-size: 13px;
-      line-height: 1.45;
-      text-align: center;
-    }
+        .support-note {
+            margin-top: 12px;
+            font-size: 13px;
+            line-height: 1.45;
+            text-align: center;
+        }
 
-    .support-icon {
-      width: 24px;
-      height: 24px;
-      display: block;
-      fill: currentColor;
-    }
+        .support-icon {
+            width: 22px;
+            height: 22px;
+            display: block;
+            fill: currentColor;
+            flex: 0 0 auto;
+            overflow: visible;
+        }
 
-    /* Чуть более аккуратные внутренние отступы для единой карточки */
-    .support-block {
-      display: grid;
-      gap: 10px;
-      text-align: center;
-    }
-  </style>
+        /* Чуть более аккуратные внутренние отступы для единой карточки */
+        .support-block {
+            display: grid;
+            gap: 10px;
+            text-align: center;
+        }
+    </style>
 </head>
 
 <body>
-  <header class="site-header">
-    <div class="container header-row">
-      <a class="brand" href="index.html">
-        <span class="brand-logo"></span>
-        <span class="brand-title">ОДИН ШАГ: КОРЕЙСКИЙ</span>
-      </a>
+    <header class="site-header">
+        <div class="container header-row">
+            <a class="brand" href="index.html">
+                <span class="brand-logo"></span>
+                <span class="brand-title">ОДИН ШАГ: КОРЕЙСКИЙ</span>
+            </a>
 
-      <!-- Профиль -->
-      <div class="profile">
-        <button id="profileBtn" class="avatar" aria-haspopup="menu" aria-expanded="false" aria-controls="profileMenu">
-          <img id="avatarImg" class="avatar-img" src="images/profile_icon.png" alt="Аватар пользователя">
-        </button>
+            <!-- Профиль -->
+            <div class="profile">
+                <button id="profileBtn" class="avatar" aria-haspopup="menu" aria-expanded="false"
+                    aria-controls="profileMenu">
+                    <img id="avatarImg" class="avatar-img" src="images/profile_icon.png" alt="Аватар пользователя">
+                </button>
 
-        <div id="profileMenu" class="profile-menu" role="menu" aria-hidden="true">
-          <div class="profile-card" id="profileCard">
-            <div class="avatar avatar-sm">
-              <img id="avatarImgSm" class="avatar-img" src="images/profile_icon.png" alt="">
+                <div id="profileMenu" class="profile-menu" role="menu" aria-hidden="true">
+                    <div class="profile-card" id="profileCard">
+                        <div class="avatar avatar-sm">
+                            <img id="avatarImgSm" class="avatar-img" src="images/profile_icon.png" alt="">
+                        </div>
+                        <div class="profile-meta">
+                            <div class="profile-name" id="profileName">Гость</div>
+                            <div class="profile-sub muted" id="profileSub">
+                                <span class="icon-streak" id="streakValue">0 дн</span>
+                                <span class="icon-limit" id="limitValue">10</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="menuLinks">
+                        <a href="index.html" role="menuitem">Главная</a>
+                        <a href="video_catalog.html" role="menuitem">Видео</a>
+                        <hr>
+                        <a href="support.html" role="menuitem">✨Поддержать</a>
+                        <hr>
+                        <a href="terms.html" role="menuitem">Условия использования</a>
+                    </div>
+                </div>
             </div>
-            <div class="profile-meta">
-              <div class="profile-name" id="profileName">Гость</div>
-              <div class="profile-sub muted" id="profileSub">
-                <span class="icon-streak" id="streakValue">0 дн</span>
-                <span class="icon-limit" id="limitValue">10</span>
-              </div>
-            </div>
-          </div>
-
-          <div id="menuLinks">
-            <a href="index.html" role="menuitem">Главная</a>
-            <a href="video_catalog.html" role="menuitem">Видео</a>
-            <hr>
-            <a href="support.html" role="menuitem">✨Поддержать</a>
-            <hr>
-            <a href="terms.html" role="menuitem">Условия использования</a>
-          </div>
         </div>
-      </div>
-    </div>
-  </header>
+    </header>
 
-  <main class="container page">
-    <div class="support-wrap">
-      <h2 class="page-title">Поддержать проект</h2>
+    <main class="container page">
+        <div class="support-wrap">
+            <h2 class="page-title">Поддержать проект</h2>
 
-      <div class="stack">
-        <!-- Одна общая карточка -->
-        <section class="empty-state support-card" aria-label="Поддержка проекта">
-          <div class="support-block">
-            <p class="support-lead muted">
-              Если тебе нравится «Один шаг: Корейский», ты можешь поддержать проект на одной из платформ ниже.
-              Это помогает развивать сайт, добавлять новые видео и улучшать функциональность.
-            </p>
+            <div class="stack">
+                <!-- Одна общая карточка -->
+                <section class="empty-state support-card" aria-label="Поддержка проекта">
+                    <div class="support-block">
+                        <p class="support-lead muted">
+                            Если тебе нравится «Один шаг: Корейский», ты можешь поддержать проект на одной из платформ
+                            ниже.
+                            Это помогает развивать сайт, добавлять новые видео и улучшать функциональность.
+                        </p>
 
-            <div class="support-actions">
-              <!-- Boosty -->
-              <a
-                class="btn"
-                href="https://boosty.to/yourname"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Открыть Boosty в новой вкладке"
-                title="Открыть Boosty"
-              >
-                <svg class="support-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M20 7h-1.1a3 3 0 0 0 .6-1.8A3.2 3.2 0 0 0 16.3 2C14.6 2 13.6 3 12.7 4c-.3.3-.5.6-.7.9-.2-.3-.4-.6-.7-.9C10.4 3 9.4 2 7.7 2A3.2 3.2 0 0 0 4.5 5.2 3 3 0 0 0 5.1 7H4a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Zm-3.7-3c.7 0 1.2.5 1.2 1.2S17 6.4 16.3 6.4H13c.6-1 1.5-2.4 3.3-2.4ZM7.7 4c1.8 0 2.7 1.4 3.3 2.4H7.7C7 6.4 6.5 5.9 6.5 5.2S7 4 7.7 4ZM4 9h7v3H4V9Zm2 5h5v8H6v-8Zm7 8v-8h5v8h-5Zm7-10h-7V9h7v3Z"/>
-                </svg>
-                Boosty
-              </a>
+                        <div class="support-actions">
+                            <!-- Boosty -->
+                            <a class="btn" href="https://boosty.to/yourname" target="_blank" rel="noopener noreferrer"
+                                aria-label="Открыть Boosty в новой вкладке" title="Открыть Boosty">
+                                <svg class="support-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                    aria-hidden="true">
+                                    <path
+                                        d="M20 7h-1.1a3 3 0 0 0 .6-1.8A3.2 3.2 0 0 0 16.3 2C14.6 2 13.6 3 12.7 4c-.3.3-.5.6-.7.9-.2-.3-.4-.6-.7-.9C10.4 3 9.4 2 7.7 2A3.2 3.2 0 0 0 4.5 5.2 3 3 0 0 0 5.1 7H4a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Zm-3.7-3c.7 0 1.2.5 1.2 1.2S17 6.4 16.3 6.4H13c.6-1 1.5-2.4 3.3-2.4ZM7.7 4c1.8 0 2.7 1.4 3.3 2.4H7.7C7 6.4 6.5 5.9 6.5 5.2S7 4 7.7 4ZM4 9h7v3H4V9Zm2 5h5v8H6v-8Zm7 8v-8h5v8h-5Zm7-10h-7V9h7v3Z" />
+                                </svg>
+                                Boosty
+                            </a>
 
-              <!-- Patreon -->
-              <a
-                class="btn"
-                href="https://patreon.com/OneStepK"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Открыть Patreon в новой вкладке"
-                title="Открыть Patreon"
-              >
-                <svg class="support-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M12 21s-7-4.4-9.4-8.7C.4 8.6 2.2 5 5.9 4.2c2-.4 3.7.4 4.9 1.8 1.2-1.4 2.9-2.2 4.9-1.8 3.7.8 5.5 4.4 3.3 8.1C19 16.6 12 21 12 21z"/>
-                </svg>
-                Patreon
-              </a>
+                            <!-- Patreon -->
+                            <a class="btn" href="https://patreon.com/OneStepK" target="_blank" rel="noopener noreferrer"
+                                aria-label="Открыть Patreon в новой вкладке" title="Открыть Patreon">
+                                <svg class="support-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                    aria-hidden="true">
+                                    <path
+                                        d="M12 21s-7-4.4-9.4-8.7C.4 8.6 2.2 5 5.9 4.2c2-.4 3.7.4 4.9 1.8 1.2-1.4 2.9-2.2 4.9-1.8 3.7.8 5.5 4.4 3.3 8.1C19 16.6 12 21 12 21z" />
+                                </svg>
+                                Patreon
+                            </a>
+                        </div>
+
+                        <div class="support-note muted">
+                            Платформы можно использовать как удобно — смысл один: ты помогаешь проекту жить и расти.
+                        </div>
+                    </div>
+                </section>
             </div>
 
-            <div class="support-note muted">
-              Платформы можно использовать как удобно — смысл один: ты помогаешь проекту жить и расти.
+            <div class="more" style="margin-top: 18px;">
+                <a class="btn link" href="index.html" aria-label="Вернуться на главную">← На главную</a>
             </div>
-          </div>
-        </section>
-      </div>
+        </div>
+    </main>
 
-      <div class="more" style="margin-top: 18px;">
-        <a class="btn link" href="index.html" aria-label="Вернуться на главную">← На главную</a>
-      </div>
-    </div>
-  </main>
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <small>© 2026 ОДИН ШАГ: КОРЕЙСКИЙ</small>
+            <small class="footer-note">
+                Права на все видео, опубликованные на сайте, принадлежат их авторам. Администрация не несет
+                ответственности за
+                содержание видео.
+            </small>
+        </div>
+    </footer>
 
-  <footer class="site-footer">
-    <div class="container footer-inner">
-      <small>© 2026 ОДИН ШАГ: КОРЕЙСКИЙ</small>
-      <small class="footer-note">
-        Права на все видео, опубликованные на сайте, принадлежат их авторам. Администрация не несет ответственности за
-        содержание видео.
-      </small>
-    </div>
-  </footer>
-
-  <!-- Для меню профиля -->
-  <script src="app.js" defer></script>
-  <script src="profile.js" defer></script>
+    <!-- Для меню профиля -->
+    <script src="app.js" defer></script>
+    <script src="profile.js" defer></script>
 </body>
+
 </html>

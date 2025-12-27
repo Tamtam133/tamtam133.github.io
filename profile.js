@@ -1,6 +1,10 @@
 const $ = (id) => document.getElementById(id);
 const LS_META = "site_meta_v1";
 
+const LS_USER = "site_user_v1";
+const LS_WORDS = "my_words_v1";
+const BASE_LIMIT = 10;
+
 // ---------- Метаданные/стрик ----------
 function loadMeta() {
     try { return JSON.parse(localStorage.getItem(LS_META)) || {}; }

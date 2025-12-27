@@ -740,16 +740,6 @@ a {
       rgba(0, 0, 0, var(--peek-min)) 100%);
 }
 
-.profile-menu .menu-support {
-  background: var(--brand-ghost);
-  color: var(--brand);
-  font-weight: 700;
-}
-
-.profile-menu .menu-support:hover {
-  background: #dfeaff;
-}
-
 @media (hover: none) {
 
   .carousel-edge,

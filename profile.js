@@ -1,9 +1,50 @@
-const $ = (id) => document.getElementById(id);
-const LS_META = "site_meta_v1";
+(() => {
+  const byId = (id) => document.getElementById(id);
 
-const LS_USER = "site_user_v1";
-const LS_WORDS = "my_words_v1";
-const BASE_LIMIT = 10;
+  const LS_META = "site_meta_v1";
+  const LS_USER = "site_user_v1";
+  const LS_WORDS = "my_words_v1";
+  const BASE_LIMIT = 10;
+
+  function openMenu() {
+    const menu = byId("profileMenu");
+    const btn = byId("profileBtn");
+    if (!menu || !btn) return;
+    menu.setAttribute("aria-hidden", "false");
+    btn.setAttribute("aria-expanded", "true");
+  }
+
+  function closeMenu() {
+    const menu = byId("profileMenu");
+    const btn = byId("profileBtn");
+    if (!menu || !btn) return;
+    menu.setAttribute("aria-hidden", "true");
+    btn.setAttribute("aria-expanded", "false");
+  }
+
+  function toggleMenu(e) {
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
+
+    const menu = byId("profileMenu");
+    if (!menu) return;
+    const hidden = menu.getAttribute("aria-hidden") !== "false";
+    hidden ? openMenu() : closeMenu();
+  }
+
+  function setupDismiss() {
+    document.addEventListener("click", (e) => {
+      const menu = byId("profileMenu");
+      const btn = byId("profileBtn");
+      if (!menu || !btn) return;
+      if (menu.contains(e.target) || btn.contains(e.target)) return;
+      closeMenu();
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeMenu();
+    });
+  }
 
 // ---------- Метаданные/стрик ----------
 function loadMeta() {
@@ -121,17 +162,21 @@ function hydrateProfile() {
     }
 }
 
-// Инициализация
-(function initProfile() {
-    const btn = $("profileBtn");
-    if (btn) btn.addEventListener("click", toggleMenu);
-
-    const resetBtn = $("resetProgress");
-    if (resetBtn) resetBtn.addEventListener("click", resetLocalProgress);
-
-    const authBtn = $("fakeAuth");
-    if (authBtn) authBtn.addEventListener("click", fakeAuthFlow);
+  function initProfile() {
+    const btn = byId("profileBtn");
+    if (btn) {
+      btn.addEventListener("click", toggleMenu);
+      // иногда удобнее ещё pointerdown, чтобы срабатывало быстрее
+      btn.addEventListener("pointerdown", toggleMenu);
+    }
 
     setupDismiss();
     hydrateProfile();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initProfile);
+  } else {
+    initProfile();
+  }
 })();

@@ -3,7 +3,6 @@
 
   const LS_META = "site_meta_v1";
   const LS_USER = "site_user_v1";
-  const LS_WORDS = "my_words_v1";
   const BASE_LIMIT = 10;
 
   function openMenu() {
@@ -81,63 +80,12 @@ function loadUser() {
     try { return JSON.parse(localStorage.getItem(LS_USER)) || {}; }
     catch { return {}; }
 }
-function saveUser(u) { localStorage.setItem(LS_USER, JSON.stringify(u)); }
+
 function initials(name = "") {
     const parts = name.trim().split(/\s+/).filter(Boolean);
     if (!parts.length) return "GK"; // Гость Кор
     const i = (parts[0][0] || "") + (parts[1]?.[0] || "");
     return i.toUpperCase();
-}
-
-// ---------- Меню ----------
-function openMenu() {
-    const menu = $("profileMenu");
-    if (!menu) return;
-    menu.setAttribute("aria-hidden", "false");
-    $("profileBtn").setAttribute("aria-expanded", "true");
-}
-function closeMenu() {
-    const menu = $("profileMenu");
-    if (!menu) return;
-    menu.setAttribute("aria-hidden", "true");
-    $("profileBtn").setAttribute("aria-expanded", "false");
-}
-
-function toggleMenu() {
-    const menu = $("profileMenu");
-    const hidden = menu.getAttribute("aria-hidden") !== "false";
-    hidden ? openMenu() : closeMenu();
-}
-
-// Закрытие по клику вне и по Esc
-function setupDismiss() {
-    document.addEventListener("click", (e) => {
-        const menu = $("profileMenu"), btn = $("profileBtn");
-        if (!menu) return;
-        if (menu.contains(e.target) || btn.contains(e.target)) return;
-        closeMenu();
-    });
-    window.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") closeMenu();
-    });
-}
-
-// Сброс локального прогресса
-function resetLocalProgress() {
-    if (!confirm("Сбросить локальный прогресс (слова, стрик, лимит)?")) return;
-    localStorage.removeItem(LS_WORDS);
-    localStorage.removeItem(LS_META);
-    closeMenu();
-    alert("Готово. Страница обновит метаданные при следующем открытии.");
-}
-
-// «Авторизация» на месте (смена отображаемого имени)
-function fakeAuthFlow() {
-    const cur = loadUser().name || "";
-    const name = prompt("Как тебя отображать в профиле?", cur) || "Гость";
-    saveUser({ name });
-    hydrateProfile(); // обновим шапку
-    closeMenu();
 }
 
 // Заполнение данных в меню
@@ -166,7 +114,6 @@ function hydrateProfile() {
     const btn = byId("profileBtn");
     if (btn) {
       btn.addEventListener("click", toggleMenu);
-      // иногда удобнее ещё pointerdown, чтобы срабатывало быстрее
       btn.addEventListener("pointerdown", toggleMenu);
     }
 

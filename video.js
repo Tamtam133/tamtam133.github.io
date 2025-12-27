@@ -1,44 +1,25 @@
 (() => {
     const $ = (id) => document.getElementById(id);
     const CATALOG_URL = "data/videos_catalog.json";
-
     let ytPlayer = null;
     let playerReady = false;
-
     let subtitles = [];
     let translations = [];
     let userSentence = [];
-
     let tickTimer = null;
-
     let snippetResumePuzzle = false;
-
-    // какой субтитр следующий по порядку
     let nextIdx = 0;
-
-    // какой паззл сейчас активен (важно для кнопок и solved)
     let activePuzzleIdx = null;
-
-    // режим "прослушать отрывок"
     let snippetMode = false;
     let snippetEnd = 0;
-    let snippetIdx = null;
-
     let videoLoaded = false;
-
     let currentVideoId = null;
     let ratingWasAsked = false;
     let ratingModalOpen = false;
-
-
-    // экран завершения + режим просмотра отрывка
-    let finishScreenVisible = false;
     let segmentMode = false;
     let segmentStart = 0;
     let segmentEnd = 0;
-    // панель субтитров справа
-    let loggedSolved = new Set(); // чтобы не добавлять одно и то же дважды
-
+    let loggedSolved = new Set();
     let maskEnabled = false;
     let maskPos = "top";
     let maskHeight = 95;
@@ -59,11 +40,9 @@
 
         readMaskControls();
 
-        // классы позиции
         el.classList.remove("top", "bottom");
         el.classList.add(maskPos === "bottom" ? "bottom" : "top");
 
-        // размер/прозрачность
         el.style.height = maskHeight + "px";
         el.style.background = `rgba(0,0,0,${maskOpacity})`;
 
@@ -176,8 +155,6 @@
         });
     }
 
-
-
     function setPuzzlePanel(show) {
         $("puzzle-under").style.display = show ? "block" : "none";
     }
@@ -271,15 +248,12 @@
         el.style.display = show ? "block" : "none";
     }
 
-    // --- rating modal helpers ---
     function setRatingModalVisible(show) {
         const modal = $("rating-modal");
         if (!modal) return;
 
         modal.setAttribute("aria-hidden", show ? "false" : "true");
         ratingModalOpen = !!show;
-
-        // блокируем прокрутку под модалкой
         document.body.style.overflow = show ? "hidden" : "";
     }
 
@@ -297,7 +271,6 @@
     }
 
     function saveVideoRating(value) {
-        // сохраняем в localStorage (не обязательно, но полезно для аналитики/прогресса)
         try {
             const key = "video_ratings";
             const raw = localStorage.getItem(key);
@@ -312,7 +285,6 @@
 
             localStorage.setItem(key, JSON.stringify(obj));
         } catch (e) {
-            // если localStorage недоступен — просто молча игнорируем
             console.warn("Cannot save rating:", e);
         }
     }
@@ -328,7 +300,6 @@
         setRatingModalVisible(true);
         setClickShield(true);
 
-        // фокус на первую звёздочку
         setTimeout(() => {
             document.querySelector("#rating-stars .rate-star")?.focus?.();
         }, 0);
@@ -341,13 +312,12 @@
 
         setFinishScreenVisible(false);
         segmentMode = false;
-        // показываем экран завершения (кнопки вместо паззла)
         showFinishActions();
 
         showFinishOverlay();
     }
 
-    // ===== Экран завершения (кнопки вместо паззла) =====
+    // ===== Экран завершения =====
     function setFinishScreenVisible(show) {
         finishScreenVisible = !!show;
 
@@ -363,14 +333,12 @@
         if (result) result.style.display = show ? "none" : "";
         if (pool) pool.style.display = show ? "none" : "";
 
-        // кнопки управления паззлом — прячем
         if (listenBtn) listenBtn.style.display = show ? "none" : "";
         if (listen1Btn) listen1Btn.style.display = show ? "none" : "";
         if (skipBtn) skipBtn.style.display = show ? "none" : "";
     }
 
     function showFinishActions() {
-        // останавливаем любые режимы проигрывания
         snippetMode = false;
         segmentMode = false;
 
@@ -389,27 +357,17 @@
         hideFinishOverlay();
         if (!subtitles.length) return;
 
-        // остановить просмотр/сниппеты
         snippetMode = false;
         segmentMode = false;
         try { ytPlayer?.pauseVideo?.(); } catch (e) { }
 
-        // сброс solved
         subtitles.forEach(s => s.solved = false);
-
-        // сброс логов
         resetSubsPanel();
-
-        // сброс индексов
         nextIdx = 0;
         activePuzzleIdx = null;
 
-        // снова разрешим спросить оценку в конце (если хочешь — можешь убрать эту строку)
-        ratingWasAsked = false;
-
         setFinishScreenVisible(false);
 
-        // старт первого паззла
         openNextPuzzle({ autoplay: true });
     }
 
@@ -418,18 +376,15 @@
         setPuzzlePanel(false);
         if (!ytPlayer?.seekTo || !subtitles.length) return;
 
-        // старт — начало первого субтитра, конец — конец последнего
         segmentStart = Math.max(0, subtitles[0].start || 0);
         segmentEnd = Math.max(segmentStart, subtitles[subtitles.length - 1].end || segmentStart);
 
-        // выключаем паззл-режим
         snippetMode = false;
         activePuzzleIdx = null;
 
         setVideoDim(false);
         setClickShield(true);
 
-        // маску показываем только если включена галка
         setTextMaskVisible(true);
 
         segmentMode = true;
@@ -438,13 +393,6 @@
         ytPlayer.playVideo();
 
         scrollToPlayer();
-    }
-
-    function formatTime(sec) {
-        sec = Math.max(0, Number(sec || 0));
-        const m = Math.floor(sec / 60);
-        const s = Math.floor(sec % 60);
-        return `${m}:${String(s).padStart(2, "0")}`;
     }
 
     function parseSRTPlain(data) {
@@ -473,7 +421,6 @@
             const start = timeToSeconds(m[1]);
             const end = timeToSeconds(m[2]);
 
-            // текст без тегов, но с пунктуацией
             const textRaw = lines.slice(timeLineIndex + 1).join(' ');
             const clean = textRaw.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
             if (!clean) continue;
@@ -486,7 +433,6 @@
     }
 
     function getTranslationText(idx) {
-        // базовый вариант: по индексу
         return translations[idx]?.text ?? "";
     }
 
@@ -517,15 +463,12 @@
                 if (btn.classList.contains('used')) return;
                 btn.classList.add('used');
 
-                // Храним и слово, и кнопку
                 userSentence.push({ word, btn });
                 renderUserSentence();
             };
 
             $("words-pool").appendChild(btn);
         }
-
-        // маленькая подсказка, какую фразу собираем (можно убрать)
     }
 
     function syncNextIdxToTime(t) {
@@ -534,7 +477,6 @@
             return;
         }
         nextIdx = 0;
-        // пропускаем все фразы, которые уже закончились к текущему времени
         while (nextIdx < subtitles.length && subtitles[nextIdx].end <= t + 0.05) {
             nextIdx++;
         }
@@ -598,14 +540,9 @@
             span.textContent = item.word;
             span.title = 'Нажми, чтобы убрать слово';
 
-            // Клик по слову в собранной фразе — убрать его
             span.onclick = () => {
-                // возвращаем кнопку в пул
                 item.btn.classList.remove('used');
-
-                // удаляем выбранное слово из собранной фразы
                 userSentence.splice(i, 1);
-
                 renderUserSentence();
             };
 
@@ -731,7 +668,6 @@
     function showFinishOverlay() {
         try { ytPlayer?.pauseVideo?.(); } catch (e) { }
 
-        // на всякий случай выключаем всё, что может мешать
         snippetMode = false;
         segmentMode = false;
 
@@ -739,7 +675,6 @@
         setTextMaskVisible(false);
         setClickShield(false);
 
-        // пазл под видео можно скрыть, чтобы “экран завершения” был только на видео
         setPuzzlePanel(false);
 
         setFinishOverlayVisible(true);
@@ -793,13 +728,11 @@
         setFinishScreenVisible(false);
         segmentMode = false;
 
-        // сброс прогресса
         nextIdx = 0;
         activePuzzleIdx = null;
         snippetMode = false;
 
         resetSubsPanel();
-        // ВАЖНО: грузим строго с 0 секунды
         ytPlayer.cueVideoById({
             videoId: id,
             startSeconds: 0
